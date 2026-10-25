@@ -193,7 +193,7 @@ export const UpiPaymentModal = ({
 
   return (
     <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(15, 23, 42, 0.7)', zIndex: 1050 }}>
-      <div className="modal-dialog modal-dialog-centered modal-md">
+      <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-md">
         <div className="modal-content shadow-lg border-0 rounded-4 overflow-hidden">
           {/* Header */}
           <div className="modal-header bg-primary text-white border-0 py-3">
