@@ -6,7 +6,7 @@ const startServer = async () => {
   try {
     await connectDB();
 
-    const server = app.listen(ENV.PORT, () => {
+    const server = app.listen(ENV.PORT, '0.0.0.0', () => {
       console.log(`====================================================`);
       console.log(` 🚗 MITAOE Campus Carpool Server running in [${ENV.NODE_ENV}] mode`);
       console.log(` 🌐 API Base URL:    http://localhost:${ENV.PORT}/api/v1`);
