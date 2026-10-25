@@ -1,0 +1,215 @@
+{
+  "info": {
+    "name": "MITAOE Campus Carpool API Test Suite",
+    "_postman_id": "mitaoe-carpool-collection-2026",
+    "description": "Automated REST API test suite for MITAOE Campus Carpool.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "1. Login Driver (Aarav)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Returns JWT token & user profile', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data).to.have.property('token');",
+                  "    pm.environment.set('authToken', json.data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"122100451001@mitaoe.ac.in\",\n  \"password\": \"StudentPassword@123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "2. Get Current Authenticated Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Returns authenticated user', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.user.email).to.eql('122100451001@mitaoe.ac.in');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rides",
+      "item": [
+        {
+          "name": "1. Search Active Rides (Paginated)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Returns rides array with pagination meta', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(Array.isArray(json.data)).to.eql(true);",
+                  "    pm.expect(json.data.length).to.be.above(0);",
+                  "    pm.environment.set('testRideId', json.data[0]._id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/rides?limit=5&page=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["rides"],
+              "query": [
+                { "key": "limit", "value": "5" },
+                { "key": "page", "value": "1" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. Filter Rides by Locality",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/rides?origin=Wakad",
+              "host": ["{{baseUrl}}"],
+              "path": ["rides"],
+              "query": [{ "key": "origin", "value": "Wakad" }]
+            }
+          }
+        },
+        {
+          "name": "3. Get Ride Details by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Contains driver profile and route', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.ride).to.have.property('origin');",
+                  "    pm.expect(json.data.ride).to.have.property('destination');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/rides/{{testRideId}}", "host": ["{{baseUrl}}"], "path": ["rides", "{{testRideId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Statistics & Analytics",
+      "item": [
+        {
+          "name": "1. Public Platform Impact Statistics",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Aggregates CO2 and cost savings', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data).to.have.property('estimatedCo2SavedKg');",
+                  "    pm.expect(json.data).to.have.property('estimatedCostSavedINR');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/stats/platform", "host": ["{{baseUrl}}"], "path": ["stats", "platform"] }
+          }
+        },
+        {
+          "name": "2. Pune/PCMC Localities (36)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Returns 30+ localities with coordinates', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.length).to.be.above(30);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/locations/pune", "host": ["{{baseUrl}}"], "path": ["locations", "pune"] }
+          }
+        }
+      ]
+    }
+  ]
+}

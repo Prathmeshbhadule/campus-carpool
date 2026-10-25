@@ -1,0 +1,279 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Transit Blue Primary Palette */
+  --color-primary: #1d4ed8;
+  --color-primary-hover: #1e40af;
+  --color-primary-light: #eff6ff;
+  --color-primary-subtle: #dbeafe;
+
+  /* Neutrals & Slate Grays */
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+
+  /* Accents */
+  --color-success: #059669;
+  --color-success-light: #ecfdf5;
+  --color-danger: #dc2626;
+  --color-danger-light: #fef2f2;
+  --color-warning: #d97706;
+  --color-warning-light: #fffbeb;
+
+  /* Typography */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  
+  /* Shadows & Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.06);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+
+  --transition-fast: 180ms ease-in-out;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-slate-50);
+  color: var(--color-slate-800);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex: 1 0 auto;
+}
+
+/* Navbar */
+.app-navbar {
+  background: #ffffff;
+  border-bottom: 1px solid var(--color-slate-200);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+}
+
+.brand-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-primary-subtle);
+}
+
+.nav-link {
+  font-weight: 500;
+  color: var(--color-slate-600);
+  transition: color var(--transition-fast);
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radius-sm);
+}
+
+.nav-link:hover, .nav-link.active {
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+}
+
+/* Hero Section */
+.hero-banner {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #2563eb 100%);
+  color: #ffffff;
+  padding: 4.5rem 1rem 5.5rem 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-banner::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.12) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* Card Polish */
+.card-carpool {
+  background: #ffffff;
+  border: 1px solid var(--color-slate-200);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.card-carpool:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-slate-300);
+}
+
+/* Buttons */
+.btn-primary-carpool {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 1.25rem;
+  transition: all var(--transition-fast);
+}
+
+.btn-primary-carpool:hover {
+  background-color: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+  color: #ffffff;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-outline-carpool {
+  background-color: transparent;
+  border: 1px solid var(--color-slate-300);
+  color: var(--color-slate-700);
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 1.25rem;
+  transition: all var(--transition-fast);
+}
+
+.btn-outline-carpool:hover {
+  background-color: var(--color-slate-100);
+  border-color: var(--color-slate-400);
+  color: var(--color-slate-900);
+}
+
+/* Forms & Inputs */
+.form-control, .form-select {
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-slate-300);
+  padding: 0.6rem 0.85rem;
+  font-size: 0.95rem;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.15);
+}
+
+.form-label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-slate-700);
+  margin-bottom: 0.35rem;
+}
+
+.form-feedback-error {
+  font-size: 0.82rem;
+  color: var(--color-danger);
+  margin-top: 0.3rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Badge Utilities */
+.badge-seat-open {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+  border: 1px solid rgba(5, 150, 105, 0.2);
+  font-weight: 600;
+}
+
+.badge-seat-full {
+  background-color: var(--color-danger-light);
+  color: var(--color-danger);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  font-weight: 600;
+}
+
+/* Leaflet Map Container */
+.leaflet-map-wrapper {
+  height: 320px;
+  width: 100%;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--color-slate-200);
+  z-index: 1;
+}
+
+/* Toast Container */
+.carpool-toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-width: 380px;
+  width: 100%;
+}
+
+/* Skeleton Loading */
+.skeleton-box {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: skeletonPulse 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes skeletonPulse {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Empty State */
+.empty-state-card {
+  padding: 3.5rem 1.5rem;
+  text-align: center;
+  background-color: #ffffff;
+  border: 1px dashed var(--color-slate-300);
+  border-radius: var(--radius-md);
+}
+
+/* Responsive adjustment */
+@media (max-width: 576px) {
+  .hero-banner {
+    padding: 3rem 1rem 3.5rem 1rem;
+  }
+}
+
+/* Radar pulse animation for Live GPS Vehicle Marker */
+@keyframes pulseRadar {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2.0);
+    opacity: 0;
+  }
+}
+
