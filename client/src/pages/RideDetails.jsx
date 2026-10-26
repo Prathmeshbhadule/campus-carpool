@@ -6,6 +6,7 @@ import { useToast } from '../context/ToastContext';
 import { MapView } from '../components/MapView';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { UpiPaymentModal } from '../components/UpiPaymentModal';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 
 export const RideDetails = () => {
   const { id } = useParams();
@@ -80,19 +81,26 @@ export const RideDetails = () => {
 
   const isDriver = user && ride.driver?._id === user._id;
   const departure = new Date(ride.departureTime);
-  const formattedDate = departure.toLocaleDateString('en-IN', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-  const formattedTime = departure.toLocaleTimeString('en-IN', {
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  const isValidDate = !isNaN(departure.getTime());
+  const formattedDate = isValidDate
+    ? departure.toLocaleDateString('en-IN', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+    : 'Upcoming Commute';
+  const formattedTime = isValidDate
+    ? departure.toLocaleTimeString('en-IN', {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    : 'Time TBD';
 
-  const isPast = departure < new Date() || ['completed', 'cancelled'].includes(ride.status);
-  const isFull = ride.seatsAvailable === 0 || ride.status === 'full';
+  const isPast = isValidDate
+    ? (departure < new Date() || ['completed', 'cancelled'].includes(ride.status))
+    : ['completed', 'cancelled'].includes(ride.status);
+  const isFull = (Number(ride.seatsAvailable) || 0) <= 0 || ride.status === 'full';
   const hasAlreadyBooked = user && bookings.some((b) => b.passenger?._id === user._id && ['requested', 'approved'].includes(b.status));
   const myBooking = bookings.find((b) => b.passenger?._id === user?._id);
 
@@ -323,15 +331,17 @@ export const RideDetails = () => {
                   Google Maps &amp; Live Telemetry
                 </span>
               </div>
-              <MapView
-                origin={ride.origin}
-                destination={ride.destination}
-                viaRoute={ride.viaRoute}
-                rideId={ride._id}
-                isDriver={isDriver}
-                vehicleType={ride.vehicle?.type}
-                height="420px"
-              />
+              <ErrorBoundary fallback={<div className="alert alert-light border small text-muted text-center py-4">Interactive map is temporarily unavailable for this route.</div>}>
+                <MapView
+                  origin={ride.origin}
+                  destination={ride.destination}
+                  viaRoute={ride.viaRoute}
+                  rideId={ride._id}
+                  isDriver={isDriver}
+                  vehicleType={ride.vehicle?.type}
+                  height="420px"
+                />
+              </ErrorBoundary>
             </div>
           </div>
 
@@ -547,7 +557,7 @@ export const RideDetails = () => {
                     value={seatsToBook}
                     onChange={(e) => setSeatsToBook(Number(e.target.value))}
                   >
-                    {Array.from({ length: Math.min(ride.seatsAvailable, 4) }).map((_, i) => (
+                    {Array.from({ length: Math.max(1, Math.min(Number(ride.seatsAvailable) || 1, 4)) }).map((_, i) => (
                       <option key={i + 1} value={i + 1}>
                         {i + 1} seat{i > 0 ? 's' : ''} (₹{effectivePerSeatFare * (i + 1)})
                       </option>
@@ -595,6 +605,75 @@ export const RideDetails = () => {
                 </button>
               </form>
             )}
+          </div>
+
+          {/* How to Use / How It Works Guide */}
+          <div className="card card-carpool border-0 p-4 mt-4">
+            <h6 className="fw-bold text-dark mb-3">
+              <i className="bi bi-question-circle-fill text-primary me-2"></i>
+              How Campus Carpool Works
+            </h6>
+            <div className="d-flex flex-column gap-3">
+              <div className="d-flex align-items-start gap-3">
+                <div
+                  className="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center"
+                  style={{ width: '32px', height: '32px', flexShrink: 0 }}
+                >
+                  1
+                </div>
+                <div>
+                  <div className="fw-semibold text-dark small">Select Stage &amp; Seats</div>
+                  <div className="text-muted small">
+                    Pick your boarding stop (Origin or intermediate chowk). Proportional fare is calculated automatically.
+                  </div>
+                </div>
+              </div>
+
+              <div className="d-flex align-items-start gap-3">
+                <div
+                  className="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center"
+                  style={{ width: '32px', height: '32px', flexShrink: 0 }}
+                >
+                  2
+                </div>
+                <div>
+                  <div className="fw-semibold text-dark small">Request Booking</div>
+                  <div className="text-muted small">
+                    Submit your request. The driver is instantly notified and can accept your booking from their dashboard.
+                  </div>
+                </div>
+              </div>
+
+              <div className="d-flex align-items-start gap-3">
+                <div
+                  className="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center"
+                  style={{ width: '32px', height: '32px', flexShrink: 0 }}
+                >
+                  3
+                </div>
+                <div>
+                  <div className="fw-semibold text-dark small">Meet &amp; Pay Seamlessly</div>
+                  <div className="text-muted small">
+                    Board at your chosen landmark. Pay the driver directly using the live UPI QR code or cash.
+                  </div>
+                </div>
+              </div>
+
+              <div className="d-flex align-items-start gap-3">
+                <div
+                  className="rounded-circle bg-success-subtle text-success fw-bold d-flex align-items-center justify-content-center"
+                  style={{ width: '32px', height: '32px', flexShrink: 0 }}
+                >
+                  <i className="bi bi-patch-check-fill"></i>
+                </div>
+                <div>
+                  <div className="fw-semibold text-dark small">100% Campus Verified</div>
+                  <div className="text-muted small">
+                    Ride safely with verified MITAOE students, faculty, and campus staff.
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

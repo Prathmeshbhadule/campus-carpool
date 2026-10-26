@@ -128,9 +128,14 @@ export const Register = () => {
         <div className="col-lg-7 col-md-9">
           <div className="card card-carpool border-0 shadow-sm p-4 p-md-5">
             <div className="text-center mb-4">
-              <span className="badge bg-primary-subtle text-primary border border-primary-subtle mb-2">
-                Verified Campus Transit Community
-              </span>
+              <div className="rounded-circle shadow-sm bg-white p-2 d-inline-flex align-items-center justify-content-center mb-2 border border-warning" style={{ width: '64px', height: '64px' }}>
+                <img src="/logo.png" alt="MITAOE Carpool Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              </div>
+              <div>
+                <span className="badge bg-primary-subtle text-primary border border-primary-subtle mb-2">
+                  Verified Campus Transit Community
+                </span>
+              </div>
               <h3 className="fw-bold text-dark">Join MITAOE Campus Carpool</h3>
               <p className="text-muted small">
                 Sign up with your official MIT Academy of Engineering email and PRN.

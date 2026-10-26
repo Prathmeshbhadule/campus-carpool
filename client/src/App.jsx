@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { SplashScreen } from './components/SplashScreen';
 
 // Pages
 import { Home } from './pages/Home';
@@ -20,22 +21,75 @@ import { Register } from './pages/Register';
 import { UpiPaymentPage } from './pages/UpiPaymentPage';
 
 export function App() {
+  const [showSplash, setShowSplash] = useState(() => {
+    return !sessionStorage.getItem('mitaoe_splash_seen');
+  });
+
+  useEffect(() => {
+    if (showSplash) {
+      const timer = setTimeout(() => {
+        sessionStorage.setItem('mitaoe_splash_seen', 'true');
+        setShowSplash(false);
+      }, 1800);
+      return () => clearTimeout(timer);
+    }
+  }, [showSplash]);
+
+  if (showSplash) {
+    return <SplashScreen />;
+  }
+
   return (
     <>
       <Navbar />
       <main>
         <ErrorBoundary>
           <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Home />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/rides/:id" element={<RideDetails />} />
-            <Route path="/calculator" element={<CalculatorPage />} />
-            <Route path="/upi-payment" element={<UpiPaymentPage />} />
+            {/* Public Authentication Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
 
-            {/* Protected Routes */}
+            {/* Protected Routes (Authentication Required for All Commute & Booking Features) */}
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Home />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/search"
+              element={
+                <ProtectedRoute>
+                  <Search />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/rides/:id"
+              element={
+                <ProtectedRoute>
+                  <RideDetails />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/calculator"
+              element={
+                <ProtectedRoute>
+                  <CalculatorPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/upi-payment"
+              element={
+                <ProtectedRoute>
+                  <UpiPaymentPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/post-ride"
               element={

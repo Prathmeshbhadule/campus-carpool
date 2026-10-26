@@ -18,10 +18,17 @@ export const Navbar = () => {
   return (
     <nav className="navbar navbar-expand-lg app-navbar py-2" aria-label="Main Navigation">
       <div className="container">
-        {/* Brand */}
+        {/* Brand with Uploaded Logo */}
         <Link className="navbar-brand d-flex align-items-center gap-2 text-decoration-none" to="/">
-          <div className="bg-primary text-white rounded p-1 d-flex align-items-center justify-content-center" style={{ width: '34px', height: '34px' }}>
-            <i className="bi bi-car-front-fill fs-5"></i>
+          <div
+            className="rounded-circle shadow-sm bg-white p-1 d-flex align-items-center justify-content-center border border-warning"
+            style={{ width: '40px', height: '40px', flexShrink: 0 }}
+          >
+            <img
+              src="/logo.png"
+              alt="MITAOE Campus Carpool"
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
           </div>
           <div>
             <span className="fw-bold text-dark fs-5 tracking-tight d-block line-height-1">MITAOE Carpool</span>
@@ -29,18 +36,37 @@ export const Navbar = () => {
           </div>
         </Link>
 
-        {/* Mobile toggle */}
-        <button
-          className="navbar-toggler border-0 shadow-none"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarMainContent"
-          aria-controls="navbarMainContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
+        {/* Mobile quick actions: notification bell + toggler */}
+        <div className="d-flex align-items-center gap-2 d-lg-none">
+          {isAuthenticated && (
+            <Link
+              to="/notifications"
+              className="btn btn-light position-relative rounded-circle p-2 text-secondary"
+              title="Notifications"
+              aria-label={`Notifications, ${unreadCount} unread`}
+            >
+              <i className="bi bi-bell fs-5"></i>
+              {unreadCount > 0 && (
+                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {unreadCount}
+                  <span className="visually-hidden">unread messages</span>
+                </span>
+              )}
+            </Link>
+          )}
+
+          <button
+            className="navbar-toggler border-0 shadow-none p-1"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarMainContent"
+            aria-controls="navbarMainContent"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span className="navbar-toggler-icon"></span>
+          </button>
+        </div>
 
         {/* Collapsible Content */}
         <div className="collapse navbar-collapse" id="navbarMainContent">
@@ -57,7 +83,7 @@ export const Navbar = () => {
             </li>
             <li className="nav-item">
               <NavLink className="nav-link" to="/calculator">
-                <i className="bi bi-calculator me-1"></i> Fare & CO₂ Calc
+                <i className="bi bi-calculator me-1"></i> Fare &amp; CO₂ Calc
               </NavLink>
             </li>
             <li className="nav-item d-flex align-items-center">
@@ -71,11 +97,11 @@ export const Navbar = () => {
             </li>
           </ul>
 
-          {/* Right Action Items */}
-          <div className="d-flex align-items-center gap-2 mt-3 mt-lg-0">
+          {/* Desktop Right Action Items */}
+          <div className="d-none d-lg-flex align-items-center gap-2">
             {isAuthenticated ? (
               <>
-                {/* Notification Bell */}
+                {/* Desktop Notification Bell */}
                 <Link
                   to="/notifications"
                   className="btn btn-light position-relative rounded-circle p-2 text-secondary"
@@ -91,7 +117,7 @@ export const Navbar = () => {
                   )}
                 </Link>
 
-                {/* User Dropdown */}
+                {/* Desktop User Dropdown */}
                 <div className="dropdown">
                   <button
                     className="btn btn-light dropdown-toggle d-flex align-items-center gap-2 border"
@@ -106,7 +132,7 @@ export const Navbar = () => {
                     >
                       {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
                     </div>
-                    <span className="d-none d-md-inline fw-semibold" style={{ fontSize: '0.9rem' }}>
+                    <span className="fw-semibold" style={{ fontSize: '0.9rem' }}>
                       {user?.name?.split(' ')[0]}
                     </span>
                   </button>
@@ -167,6 +193,66 @@ export const Navbar = () => {
                 </Link>
                 <Link to="/register" className="btn btn-primary-carpool btn-sm">
                   Register
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Dedicated Mobile Profile View (Solves Image 2 clipping issue) */}
+          <div className="d-lg-none mt-3 pt-3 border-top">
+            {isAuthenticated ? (
+              <div className="bg-light rounded-3 p-3 border">
+                <div className="d-flex align-items-center gap-3 mb-3">
+                  <div
+                    className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold fs-5 shadow-sm"
+                    style={{ width: '44px', height: '44px', flexShrink: 0 }}
+                  >
+                    {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                  <div className="overflow-hidden">
+                    <div className="fw-bold text-dark text-truncate">{user?.name}</div>
+                    <div className="text-muted small text-truncate">{user?.email}</div>
+                    <span className="badge bg-primary-subtle text-primary border border-primary-subtle text-capitalize mt-1">
+                      {user?.role}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="d-grid gap-2">
+                  <Link to="/dashboard" className="btn btn-sm btn-outline-primary text-start d-flex align-items-center gap-2">
+                    <i className="bi bi-speedometer2"></i> Dashboard
+                  </Link>
+                  <Link to="/profile" className="btn btn-sm btn-outline-secondary text-start d-flex align-items-center gap-2">
+                    <i className="bi bi-person"></i> My Profile
+                  </Link>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-success text-start d-flex align-items-center gap-2"
+                    onClick={() => setShowUpiModal(true)}
+                  >
+                    <i className="bi bi-qr-code-scan"></i> Real-Time UPI Gateway
+                  </button>
+                  {isAdmin && (
+                    <Link to="/admin" className="btn btn-sm btn-outline-danger text-start d-flex align-items-center gap-2">
+                      <i className="bi bi-shield-lock"></i> Admin Panel
+                    </Link>
+                  )}
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-danger text-start d-flex align-items-center gap-2 mt-2"
+                    onClick={handleLogout}
+                  >
+                    <i className="bi bi-box-arrow-right"></i> Sign Out
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="d-grid gap-2">
+                <Link to="/login" className="btn btn-outline-carpool">
+                  Sign In
+                </Link>
+                <Link to="/register" className="btn btn-primary-carpool">
+                  Register with PRN
                 </Link>
               </div>
             )}

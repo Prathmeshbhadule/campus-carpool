@@ -52,35 +52,41 @@ export const CalculatorPage = () => {
         )}
       </div>
 
-      {/* Methodology & Formula Reference */}
+      {/* Fare Sharing Guidance & Corridor Reference */}
       <div className="row g-4">
         <div className="col-md-6">
           <div className="card card-carpool h-100 p-4 border-0">
             <h5 className="fw-bold text-dark mb-2">
-              <i className="bi bi-gear-wide-connected text-primary me-2"></i>
-              Scientific Stage Fare &amp; Split Formula
+              <i className="bi bi-info-circle-fill text-primary me-2"></i>
+              How Fare Sharing Works at MITAOE
             </h5>
             <p className="text-muted small mb-3">
-              Standard automotive calculations adapted for Indian urban transit and intermediate waypoint boarding:
+              A transparent, non-profit cost-sharing model designed for college students and faculty:
             </p>
-            <ul className="small text-secondary d-flex flex-column gap-2 mb-0">
-              <li>
-                <strong>Multi-Stop Ratio:</strong> (Distance to Destination &minus; Distance to Boarding Stop) &divide; Total Route Distance
+            <ul className="small text-secondary d-flex flex-column gap-3 mb-0 list-unstyled">
+              <li className="d-flex align-items-start gap-2">
+                <i className="bi bi-fuel-pump-fill text-success fs-6 mt-1"></i>
+                <div>
+                  <strong>Pure Fuel Splitting:</strong> Fares only cover actual vehicle fuel and toll costs. Drivers make no commercial profit, keeping rides 100% compliant with college rules.
+                </div>
               </li>
-              <li>
-                <strong>Stage Fare per Person:</strong> Max(₹15, Round(Driver Full Fare &times; Stage Ratio))
+              <li className="d-flex align-items-start gap-2">
+                <i className="bi bi-geo-alt-fill text-primary fs-6 mt-1"></i>
+                <div>
+                  <strong>Pay Only for Your Distance:</strong> Boarding at an intermediate stop (like Wakad, Dange Chowk, or Bhosari)? You pay only for your portion of the route.
+                </div>
               </li>
-              <li>
-                <strong>Rider Custom Amount:</strong> Allows driver and passenger to agree on a negotiated fare amount with instant total &amp; UPI QR generation.
+              <li className="d-flex align-items-start gap-2">
+                <i className="bi bi-qr-code-scan text-info fs-6 mt-1"></i>
+                <div>
+                  <strong>Instant UPI QR &amp; Cash:</strong> Pay the driver directly upon pickup using your favorite UPI app (Google Pay, PhonePe, Paytm) or cash.
+                </div>
               </li>
-              <li>
-                <strong>Solo Cab Fare:</strong> Base Fare (₹45) + (Stage Distance &times; ₹20/km)
-              </li>
-              <li>
-                <strong>Net Carbon Reduction:</strong> Seats &times; (Stage Distance &times; 0.142 kg CO₂)
-              </li>
-              <li>
-                <strong>Tree Absorption Equivalent:</strong> 1 mature Indian tree sequesters approximately <strong>21.77 kg of CO₂ per year</strong>.
+              <li className="d-flex align-items-start gap-2">
+                <i className="bi bi-piggy-bank-fill text-warning fs-6 mt-1"></i>
+                <div>
+                  <strong>Huge Daily Savings:</strong> Save up to ₹150 every day compared to solo auto-rickshaws or app-cabs while cutting campus parking hassles.
+                </div>
               </li>
             </ul>
           </div>

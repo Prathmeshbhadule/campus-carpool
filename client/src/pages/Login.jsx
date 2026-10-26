@@ -60,8 +60,8 @@ export const Login = () => {
         <div className="col-lg-5 col-md-7">
           <div className="card card-carpool border-0 shadow-sm p-4 p-md-5">
             <div className="text-center mb-4">
-              <div className="bg-primary text-white rounded p-2 d-inline-flex align-items-center justify-content-center mb-2" style={{ width: '48px', height: '48px' }}>
-                <i className="bi bi-car-front-fill fs-4"></i>
+              <div className="rounded-circle shadow-sm bg-white p-2 d-inline-flex align-items-center justify-content-center mb-2 border border-warning" style={{ width: '64px', height: '64px' }}>
+                <img src="/logo.png" alt="MITAOE Carpool Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </div>
               <h4 className="fw-bold text-dark">Sign In to MITAOE Carpool</h4>
               <p className="text-muted small">Enter your verified @mitaoe.ac.in college credentials.</p>

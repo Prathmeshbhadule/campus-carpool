@@ -64,12 +64,12 @@ export const MapView = ({
     currentMilestone: 'Departed Pickup Spot'
   });
 
-  const originCoords = origin?.coordinates && origin.coordinates.length === 2
-    ? origin.coordinates
+  const originCoords = origin?.coordinates && origin.coordinates.length === 2 && !isNaN(parseFloat(origin.coordinates[0])) && !isNaN(parseFloat(origin.coordinates[1]))
+    ? [parseFloat(origin.coordinates[0]), parseFloat(origin.coordinates[1])]
     : [18.5987, 73.7629]; // Default Wakad
 
-  const destCoords = destination?.coordinates && destination.coordinates.length === 2
-    ? destination.coordinates
+  const destCoords = destination?.coordinates && destination.coordinates.length === 2 && !isNaN(parseFloat(destination.coordinates[0])) && !isNaN(parseFloat(destination.coordinates[1]))
+    ? [parseFloat(destination.coordinates[0]), parseFloat(destination.coordinates[1])]
     : [18.6756, 73.8906]; // MITAOE Alandi
 
   // Calculate straight-line distance
