@@ -4,12 +4,28 @@ import apiClient from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { MapView } from '../components/MapView';
+import { LocationSearchInput } from '../components/LocationSearchInput';
 
 const POPULAR_CORRIDORS = [
+  {
+    name: 'Dehu Phata ➔ Pune Station (Uber Demo)',
+    originLocality: 'Dehu Phata',
+    originName: 'Dehu Phata / Dehu Road',
+    originCoords: [18.7188, 73.7712],
+    destLocality: 'Pune Station',
+    destName: 'Pune Railway Station',
+    destCoords: [18.5284, 73.8743],
+    viaRoute: 'Bhosari MIDC, Dapodi, Shivajinagar',
+    costPerSeat: 65
+  },
   {
     name: 'Wakad & PCMC Corridor',
     originLocality: 'Wakad',
     originName: 'Bhumkar Chowk / Wakad Bridge',
+    originCoords: [18.5987, 73.7629],
+    destLocality: 'Alandi',
+    destName: 'MITAOE Main Gate, Alandi',
+    destCoords: [18.6756, 73.8906],
     viaRoute: 'Dange Chowk, Bhosari MIDC',
     costPerSeat: 60
   },
@@ -59,15 +75,17 @@ export const PostRide = () => {
 
   // Form State
   const [form, setForm] = useState({
-    originName: '',
-    originLocality: 'Wakad',
-    destName: 'MITAOE Main Gate, Alandi',
-    destLocality: 'Alandi',
-    viaRoute: 'Dange Chowk, Bhosari',
+    originName: 'Dehu Phata / Dehu Road',
+    originLocality: 'Dehu Phata',
+    originCoords: [18.7188, 73.7712],
+    destName: 'Pune Railway Station',
+    destLocality: 'Pune Station',
+    destCoords: [18.5284, 73.8743],
+    viaRoute: 'Bhosari MIDC, Dapodi, Shivajinagar',
     departureDate: '',
     departureTime: '',
     seatsTotal: user?.vehicle?.type === 'bike' ? 1 : 3,
-    costPerSeat: 60,
+    costPerSeat: 65,
     vehicleType: user?.vehicle?.type === 'bike' ? 'bike' : 'car',
     vehicleModel: user?.vehicle?.model || '',
     vehiclePlate: user?.vehicle?.plate || '',
@@ -185,6 +203,10 @@ export const PostRide = () => {
       ...prev,
       originLocality: corridor.originLocality,
       originName: corridor.originName,
+      originCoords: corridor.originCoords || prev.originCoords,
+      destLocality: corridor.destLocality || prev.destLocality,
+      destName: corridor.destName || prev.destName,
+      destCoords: corridor.destCoords || prev.destCoords,
       viaRoute: corridor.viaRoute,
       costPerSeat: corridor.costPerSeat
     }));
@@ -197,8 +219,8 @@ export const PostRide = () => {
   const selectedOriginLoc = localities.find((l) => l.locality === form.originLocality);
   const selectedDestLoc = localities.find((l) => l.locality === form.destLocality);
 
-  const mapOriginCoords = gpsCoords || selectedOriginLoc?.coordinates || [18.5987, 73.7629];
-  const mapDestCoords = selectedDestLoc?.coordinates || [18.6756, 73.8906];
+  const mapOriginCoords = gpsCoords || form.originCoords || selectedOriginLoc?.coordinates || [18.7188, 73.7712];
+  const mapDestCoords = form.destCoords || selectedDestLoc?.coordinates || [18.5284, 73.8743];
 
   const mapOriginObj = useMemo(
     () => ({
@@ -428,78 +450,78 @@ export const PostRide = () => {
                 </div>
               )}
 
-              <div className="row g-3 mb-4">
-                {/* Origin Locality */}
-                <div className="col-md-6">
-                  <label className="form-label small fw-semibold">
-                    Origin Locality <span className="text-danger">*</span>
-                  </label>
-                  <select
-                    className="form-select"
-                    name="originLocality"
-                    value={form.originLocality}
-                    onChange={handleChange}
-                  >
-                    {localities.map((loc) => (
-                      <option key={loc.locality} value={loc.locality}>
-                        {loc.locality} ({loc.distanceKm} km to MITAOE)
-                      </option>
-                    ))}
-                  </select>
+              {/* Uber-style Connected Location Inputs (No Dropdowns!) */}
+              <div className="card border-0 bg-light p-3 rounded-4 mb-4 position-relative">
+                <div className="d-flex align-items-center justify-content-between mb-3">
+                  <span className="small fw-bold text-uppercase text-secondary" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>
+                    Route Stops &bull; Real Road Network
+                  </span>
+                  <span className="badge bg-dark text-white rounded-pill px-2 py-1" style={{ fontSize: '0.68rem' }}>
+                    Uber-style Auto-Suggest
+                  </span>
                 </div>
 
-                {/* Origin Specific Landmark */}
-                <div className="col-md-6">
-                  <label className="form-label small fw-semibold">
-                    Pickup Landmark / Spot <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    className={`form-control ${errors.originName ? 'is-invalid' : ''}`}
-                    placeholder="e.g. Bhumkar Chowk / Phoenix Mall gate"
-                    name="originName"
+                <div className="position-relative">
+                  {/* Origin Location Input */}
+                  <LocationSearchInput
+                    label="Pickup Location"
+                    placeholder="Enter pickup location (e.g. Dehu Phata, Wakad, Hinjawadi)"
                     value={form.originName}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
+                    iconType="pickup"
+                    localities={localities}
+                    error={errors.originName}
+                    onSelect={(loc) => {
+                      setForm((prev) => ({
+                        ...prev,
+                        originLocality: loc.locality,
+                        originName: loc.name,
+                        originCoords: loc.coordinates,
+                        costPerSeat: Math.max(30, Math.round((loc.distanceKm || 15) * 2.5))
+                      }));
+                      if (errors.originName) setErrors((prev) => ({ ...prev, originName: '' }));
+                    }}
+                    onChange={(text) => {
+                      setForm((prev) => ({ ...prev, originName: text }));
+                      if (errors.originName) setErrors((prev) => ({ ...prev, originName: '' }));
+                    }}
                   />
-                  {errors.originName && <div className="form-feedback-error">{errors.originName}</div>}
-                </div>
 
-                {/* Destination Locality */}
-                <div className="col-md-6">
-                  <label className="form-label small fw-semibold">
-                    Destination Locality <span className="text-danger">*</span>
-                  </label>
-                  <select
-                    className="form-select"
-                    name="destLocality"
-                    value={form.destLocality}
-                    onChange={handleChange}
-                  >
-                    {localities.map((loc) => (
-                      <option key={loc.locality} value={loc.locality}>
-                        {loc.locality}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                  {/* Vertical route connector line */}
+                  <div
+                    style={{
+                      width: '2px',
+                      height: '24px',
+                      backgroundColor: '#111827',
+                      margin: '6px 0 6px 17px'
+                    }}
+                  />
 
-                {/* Destination Landmark */}
-                <div className="col-md-6">
-                  <label className="form-label small fw-semibold">
-                    Drop Landmark <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    className={`form-control ${errors.destName ? 'is-invalid' : ''}`}
-                    placeholder="e.g. MITAOE Main Entrance Gate"
-                    name="destName"
+                  {/* Destination Location Input */}
+                  <LocationSearchInput
+                    label="Destination Location"
+                    placeholder="Enter destination (e.g. Pune station, MITAOE Alandi)"
                     value={form.destName}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
+                    iconType="destination"
+                    localities={localities}
+                    error={errors.destName}
+                    onSelect={(loc) => {
+                      setForm((prev) => ({
+                        ...prev,
+                        destLocality: loc.locality,
+                        destName: loc.name,
+                        destCoords: loc.coordinates
+                      }));
+                      if (errors.destName) setErrors((prev) => ({ ...prev, destName: '' }));
+                    }}
+                    onChange={(text) => {
+                      setForm((prev) => ({ ...prev, destName: text }));
+                      if (errors.destName) setErrors((prev) => ({ ...prev, destName: '' }));
+                    }}
                   />
-                  {errors.destName && <div className="form-feedback-error">{errors.destName}</div>}
                 </div>
+              </div>
+
+              <div className="row g-3 mb-4">
 
                 {/* Intermediate stops */}
                 <div className="col-12">

@@ -1,4 +1,5 @@
 import React from 'react';
+import { LocationSearchInput } from './LocationSearchInput';
 
 export const RideFilter = ({ filters, onChange, onReset, localities = [] }) => {
   const handleChange = (e) => {
@@ -21,43 +22,31 @@ export const RideFilter = ({ filters, onChange, onReset, localities = [] }) => {
         </button>
       </div>
 
-      <div className="row g-2">
+      <div className="row g-2 align-items-end">
         {/* Origin */}
         <div className="col-md-3 col-sm-6">
-          <label className="form-label small text-muted">From (Origin)</label>
-          <input
-            type="text"
-            className="form-control form-control-sm"
-            placeholder="e.g. Wakad, Baner, Kothrud"
-            name="origin"
+          <LocationSearchInput
+            label="From (Origin)"
+            placeholder="e.g. Dehu Phata, Wakad"
             value={filters.origin || ''}
-            onChange={handleChange}
-            list="origin-localities"
+            iconType="pickup"
+            localities={localities}
+            onChange={(text) => onChange({ ...filters, origin: text })}
+            onSelect={(loc) => onChange({ ...filters, origin: loc.locality })}
           />
-          <datalist id="origin-localities">
-            {localities.map((loc) => (
-              <option key={loc.locality} value={loc.locality} />
-            ))}
-          </datalist>
         </div>
 
         {/* Destination */}
         <div className="col-md-3 col-sm-6">
-          <label className="form-label small text-muted">To (Destination)</label>
-          <input
-            type="text"
-            className="form-control form-control-sm"
-            placeholder="e.g. Alandi, Campus"
-            name="destination"
+          <LocationSearchInput
+            label="To (Destination)"
+            placeholder="e.g. Pune Station, Alandi"
             value={filters.destination || ''}
-            onChange={handleChange}
-            list="dest-localities"
+            iconType="destination"
+            localities={localities}
+            onChange={(text) => onChange({ ...filters, destination: text })}
+            onSelect={(loc) => onChange({ ...filters, destination: loc.locality })}
           />
-          <datalist id="dest-localities">
-            {localities.map((loc) => (
-              <option key={loc.locality} value={loc.locality} />
-            ))}
-          </datalist>
         </div>
 
         {/* Date */}

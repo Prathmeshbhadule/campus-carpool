@@ -3,25 +3,29 @@ import { Link, useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import { RideCard } from '../components/RideCard';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
+import { LocationSearchInput } from '../components/LocationSearchInput';
 
 export const Home = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [featuredRides, setFeaturedRides] = useState([]);
+  const [localities, setLocalities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchFrom, setSearchFrom] = useState('');
-  const [searchTo, setSearchTo] = useState('Alandi');
+  const [searchTo, setSearchTo] = useState('MITAOE Campus, Alandi');
   const [searchDate, setSearchDate] = useState('');
 
   useEffect(() => {
     const fetchHomeData = async () => {
       try {
-        const [statsRes, ridesRes] = await Promise.all([
+        const [statsRes, ridesRes, locsRes] = await Promise.all([
           apiClient.get('/stats/platform'),
-          apiClient.get('/rides?limit=3&sortBy=departureTime&order=asc')
+          apiClient.get('/rides?limit=3&sortBy=departureTime&order=asc'),
+          apiClient.get('/locations/pune').catch(() => ({ data: [] }))
         ]);
         setStats(statsRes.data);
         setFeaturedRides(ridesRes.data || []);
+        setLocalities(locsRes.data || []);
       } catch (err) {
         console.warn('[Home] Failed to load initial platform data:', err);
       } finally {
@@ -62,31 +66,29 @@ export const Home = () => {
               <form onSubmit={handleHeroSearch} className="bg-white p-3 p-md-4 rounded-4 shadow-lg text-dark text-start">
                 <div className="row g-3 align-items-end">
                   <div className="col-md-4 col-sm-6">
-                    <label className="form-label text-muted small fw-semibold">
-                      <i className="bi bi-geo-alt-fill text-success me-1"></i> Pickup Locality
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="e.g. Wakad, Baner, Kothrud"
+                    <LocationSearchInput
+                      label="Pickup Locality"
+                      placeholder="e.g. Dehu Phata, Wakad, Hinjawadi"
                       value={searchFrom}
-                      onChange={(e) => setSearchFrom(e.target.value)}
+                      iconType="pickup"
+                      localities={localities}
+                      onChange={(text) => setSearchFrom(text)}
+                      onSelect={(loc) => setSearchFrom(loc.locality)}
                     />
                   </div>
                   <div className="col-md-4 col-sm-6">
-                    <label className="form-label text-muted small fw-semibold">
-                      <i className="bi bi-geo-alt-fill text-primary me-1"></i> Destination
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="e.g. Alandi Campus"
+                    <LocationSearchInput
+                      label="Destination"
+                      placeholder="e.g. Pune Station, MITAOE Alandi"
                       value={searchTo}
-                      onChange={(e) => setSearchTo(e.target.value)}
+                      iconType="destination"
+                      localities={localities}
+                      onChange={(text) => setSearchTo(text)}
+                      onSelect={(loc) => setSearchTo(loc.name)}
                     />
                   </div>
                   <div className="col-md-2 col-sm-6">
-                    <label className="form-label text-muted small fw-semibold">Date</label>
+                    <label className="form-label text-muted small fw-semibold">Travel Date</label>
                     <input
                       type="date"
                       className="form-control"
@@ -95,8 +97,8 @@ export const Home = () => {
                     />
                   </div>
                   <div className="col-md-2 col-sm-6">
-                    <button type="submit" className="btn btn-primary-carpool w-100 py-2 d-flex align-items-center justify-content-center gap-1">
-                      <i className="bi bi-search"></i> Find
+                    <button type="submit" className="btn btn-primary-carpool w-100 py-2 d-flex align-items-center justify-content-center gap-1" style={{ minHeight: '50px' }}>
+                      <i className="bi bi-search"></i> Find Rides
                     </button>
                   </div>
                 </div>
