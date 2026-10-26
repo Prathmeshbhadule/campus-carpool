@@ -49,8 +49,8 @@ export const Home = () => {
   return (
     <div>
       {/* Hero Section */}
-      <section className="hero-banner" aria-label="Hero search section">
-        <div className="container position-relative" style={{ zIndex: 2 }}>
+      <section className="hero-banner" aria-label="Hero search section" style={{ position: 'relative', zIndex: 20, overflow: 'visible' }}>
+        <div className="container position-relative" style={{ zIndex: 25, overflow: 'visible' }}>
           <div className="row align-items-center">
             <div className="col-lg-8 mx-auto text-center">
               <span className="badge bg-white text-primary fw-bold text-uppercase px-3 py-2 rounded-pill mb-3 shadow-sm">
@@ -110,7 +110,7 @@ export const Home = () => {
       </section>
 
       {/* Live Impact Counters */}
-      <section className="py-4 bg-white border-bottom shadow-sm">
+      <section className="py-4 bg-white border-bottom shadow-sm" style={{ position: 'relative', zIndex: 1 }}>
         <div className="container">
           <div className="row text-center g-3">
             <div className="col-6 col-md-3">

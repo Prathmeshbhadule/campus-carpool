@@ -106,7 +106,8 @@ main {
   color: #ffffff;
   padding: 4.5rem 1rem 5.5rem 1rem;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
+  z-index: 20;
 }
 
 .hero-banner::after {

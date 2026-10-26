@@ -16,6 +16,7 @@ export const LocationSearchInput = ({
   const [coords, setCoords] = useState(null);
 
   const containerRef = useRef(null);
+  const inputWrapperRef = useRef(null);
   const dropdownRef = useRef(null);
 
   // Sync external value
@@ -25,8 +26,9 @@ export const LocationSearchInput = ({
 
   // Calculate coordinates relative to viewport for fixed position portal
   const updateCoords = useCallback(() => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
+    const el = inputWrapperRef.current || containerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
     if (rect.width === 0 && rect.height === 0) return;
 
     const spaceBelow = window.innerHeight - rect.bottom;
@@ -75,7 +77,8 @@ export const LocationSearchInput = ({
   // Click outside listener to close dropdown
   useEffect(() => {
     const handleClickOutside = (e) => {
-      const inInput = containerRef.current && containerRef.current.contains(e.target);
+      const inInput = (containerRef.current && containerRef.current.contains(e.target)) ||
+                      (inputWrapperRef.current && inputWrapperRef.current.contains(e.target));
       const inDropdown = dropdownRef.current && dropdownRef.current.contains(e.target);
       if (!inInput && !inDropdown) {
         setIsOpen(false);
@@ -134,6 +137,7 @@ export const LocationSearchInput = ({
 
       {/* Input row styled like Uber */}
       <div
+        ref={inputWrapperRef}
         className={`d-flex align-items-center bg-light rounded-3 px-3 py-2 border transition-all ${
           isOpen ? 'border-dark shadow-sm' : error ? 'border-danger' : 'border-light-subtle'
         }`}
@@ -176,6 +180,10 @@ export const LocationSearchInput = ({
           placeholder={placeholder}
           value={query}
           onChange={handleInputChange}
+          onClick={() => {
+            setIsOpen(true);
+            updateCoords();
+          }}
           onFocus={() => {
             setIsOpen(true);
             updateCoords();
