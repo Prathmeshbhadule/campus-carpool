@@ -8,7 +8,7 @@ export const RideFilter = ({ filters, onChange, onReset, localities = [] }) => {
   };
 
   return (
-    <div className="card card-carpool p-3 mb-4">
+    <div className="card card-carpool p-3 mb-4" style={{ position: 'relative', zIndex: 100, overflow: 'visible' }}>
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h6 className="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
           <i className="bi bi-funnel text-primary"></i> Filter Campus Rides
@@ -22,9 +22,9 @@ export const RideFilter = ({ filters, onChange, onReset, localities = [] }) => {
         </button>
       </div>
 
-      <div className="row g-2 align-items-end">
+      <div className="row g-2 align-items-end" style={{ overflow: 'visible' }}>
         {/* Origin */}
-        <div className="col-md-3 col-sm-6">
+        <div className="col-md-3 col-sm-6" style={{ position: 'relative', zIndex: 115 }}>
           <LocationSearchInput
             label="From (Origin)"
             placeholder="e.g. Dehu Phata, Wakad"
@@ -37,7 +37,7 @@ export const RideFilter = ({ filters, onChange, onReset, localities = [] }) => {
         </div>
 
         {/* Destination */}
-        <div className="col-md-3 col-sm-6">
+        <div className="col-md-3 col-sm-6" style={{ position: 'relative', zIndex: 110 }}>
           <LocationSearchInput
             label="To (Destination)"
             placeholder="e.g. Pune Station, Alandi"

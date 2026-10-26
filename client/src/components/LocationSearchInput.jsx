@@ -68,7 +68,11 @@ export const LocationSearchInput = ({
   };
 
   return (
-    <div className="location-search-group position-relative" ref={containerRef}>
+    <div
+      className="location-search-group position-relative"
+      ref={containerRef}
+      style={{ zIndex: isOpen ? 1050 : 'auto' }}
+    >
       {label && <label className="form-label small fw-semibold text-secondary mb-1">{label}</label>}
 
       {/* Input row styled like Uber */}
@@ -139,9 +143,10 @@ export const LocationSearchInput = ({
         <div
           className="position-absolute start-0 end-0 bg-white rounded-3 shadow-lg border mt-1 overflow-hidden"
           style={{
-            zIndex: 1050,
+            zIndex: 9999,
             maxHeight: '290px',
-            overflowY: 'auto'
+            overflowY: 'auto',
+            boxShadow: '0 14px 35px rgba(0, 0, 0, 0.22)'
           }}
         >
           <div className="p-2 border-bottom bg-light d-flex justify-content-between align-items-center">

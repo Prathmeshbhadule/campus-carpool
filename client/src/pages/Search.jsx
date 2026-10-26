@@ -107,19 +107,21 @@ export const Search = () => {
       </div>
 
       {/* Filter Component */}
-      <RideFilter
-        filters={filters}
-        onChange={handleFilterChange}
-        onReset={handleResetFilters}
-        localities={localities}
-      />
+      <div style={{ position: 'relative', zIndex: 100 }}>
+        <RideFilter
+          filters={filters}
+          onChange={handleFilterChange}
+          onReset={handleResetFilters}
+          localities={localities}
+        />
+      </div>
 
       {/* Ride Results Feed */}
       {loading ? (
         <LoadingSkeleton count={6} />
       ) : rides.length > 0 ? (
         <>
-          <div className="row g-4">
+          <div className="row g-4" style={{ position: 'relative', zIndex: 1 }}>
             {rides.map((ride) => (
               <div key={ride._id} className="col-lg-4 col-md-6">
                 <RideCard ride={ride} />

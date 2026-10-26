@@ -278,3 +278,13 @@ main {
   }
 }
 
+/* Location Search Dropdown Stacking (Ensures suggestions float ABOVE cards) */
+.location-search-group {
+  position: relative;
+}
+
+.location-search-group .position-absolute {
+  z-index: 99999 !important;
+}
+
+

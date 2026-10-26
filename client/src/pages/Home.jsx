@@ -64,9 +64,9 @@ export const Home = () => {
               </p>
 
               {/* Quick Search Form */}
-              <form onSubmit={handleHeroSearch} className="bg-white p-3 p-md-4 rounded-4 shadow-lg text-dark text-start">
-                <div className="row g-3 align-items-end">
-                  <div className="col-md-4 col-sm-6">
+              <form onSubmit={handleHeroSearch} className="bg-white p-3 p-md-4 rounded-4 shadow-lg text-dark text-start" style={{ position: 'relative', zIndex: 100, overflow: 'visible' }}>
+                <div className="row g-3 align-items-end" style={{ overflow: 'visible' }}>
+                  <div className="col-md-4 col-sm-6" style={{ position: 'relative', zIndex: 115 }}>
                     <LocationSearchInput
                       label="Pickup Locality"
                       placeholder="e.g. Dehu Phata, Wakad, Hinjawadi"
@@ -77,7 +77,7 @@ export const Home = () => {
                       onSelect={(loc) => setSearchFrom(loc.locality)}
                     />
                   </div>
-                  <div className="col-md-4 col-sm-6">
+                  <div className="col-md-4 col-sm-6" style={{ position: 'relative', zIndex: 110 }}>
                     <LocationSearchInput
                       label="Destination"
                       placeholder="e.g. Pune Station, MITAOE Alandi"
