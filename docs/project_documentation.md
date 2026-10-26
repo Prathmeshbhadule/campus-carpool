@@ -45,6 +45,20 @@ Key challenges observed on campus:
 
 ---
 
+## 2.1 Mapping to UN Sustainable Development Goals (SDGs)
+
+This project directly aligns with **5 United Nations Sustainable Development Goals (UN SDGs)**, addressing urban transit bottlenecks, environmental degradation, and resource efficiency:
+
+| SDG Icon & Number | Goal Title | Primary Target Addressed | Project Implementation & Contribution |
+| :--- | :--- | :--- | :--- |
+| **SDG 11** 🏙️ | **Sustainable Cities and Communities** | **Target 11.2:** Safe, affordable, accessible, and sustainable transport systems for all | Consolidates individual commuter trips across 36 Pune/PCMC corridors into shared commutes, directly easing traffic congestion, bottleneck delays along Alandi Road, and pressure on overloaded public transit. |
+| **SDG 13** 🌍 | **Climate Action** | **Target 13.2:** Integrate climate change measures into strategies and planning | Features an interactive **$\text{CO}_2$ Emissions Estimator** calculating avoided vehicular emissions: $\Delta \text{CO}_2 = (N - 1) \times d \times E_f$. By grouping 3–4 commuters into 1 vehicle, each commute eliminates up to 60–75% of carbon emissions. |
+| **SDG 12** ♻️ | **Responsible Consumption and Production** | **Target 12.2:** Sustainable management and efficient use of natural resources | Maximizes vehicle asset utilization through shared mobility, significantly reducing per-capita fossil fuel consumption (Petrol, Diesel, CNG) among college students and faculty. |
+| **SDG 9** 💡 | **Industry, Innovation, and Infrastructure** | **Target 9.4:** Upgrade infrastructure with clean and environmentally sound technologies | Builds resilient digital campus transit infrastructure featuring real-world Leaflet & Google Maps routing, live hardware GPS telemetry, and instant NPCI-compliant UPI QR payment integration. |
+| **SDG 3** 💚 | **Good Health and Well-Being** | **Target 3.9:** Substantially reduce illnesses and deaths from air pollution | Fewer running vehicle engines decreases toxic vehicular exhaust ($PM_{2.5}$, $PM_{10}$, $NO_x$, $CO$) along college routes, mitigating respiratory hazards and commute-induced physical/mental stress. |
+
+---
+
 ## 3. Technology Stack & Architectural Overview
 
 The application follows a modular, decoupled **MERN (MongoDB, Express, React, Node.js)** architecture with responsive front-end styling and containerized cloud deployment.
