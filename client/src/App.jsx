@@ -21,19 +21,14 @@ import { Register } from './pages/Register';
 import { UpiPaymentPage } from './pages/UpiPaymentPage';
 
 export function App() {
-  const [showSplash, setShowSplash] = useState(() => {
-    return !sessionStorage.getItem('mitaoe_splash_seen');
-  });
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    if (showSplash) {
-      const timer = setTimeout(() => {
-        sessionStorage.setItem('mitaoe_splash_seen', 'true');
-        setShowSplash(false);
-      }, 1800);
-      return () => clearTimeout(timer);
-    }
-  }, [showSplash]);
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   if (showSplash) {
     return <SplashScreen />;

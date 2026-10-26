@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { MapView } from '../components/MapView';
 import { LocationSearchInput } from '../components/LocationSearchInput';
+import { DEFAULT_LOCALITIES } from '../utils/localities';
 
 const POPULAR_CORRIDORS = [
   {
@@ -64,8 +65,8 @@ export const PostRide = () => {
   const { user } = useAuth();
   const { showSuccess, showError, showInfo } = useToast();
 
-  const [localities, setLocalities] = useState([]);
-  const [loadingLocalities, setLoadingLocalities] = useState(true);
+  const [localities, setLocalities] = useState(DEFAULT_LOCALITIES);
+  const [loadingLocalities, setLoadingLocalities] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   // Live GPS state
@@ -98,12 +99,12 @@ export const PostRide = () => {
     const fetchLocalities = async () => {
       try {
         const res = await apiClient.get('/locations/pune');
-        const locs = res.data || [];
-        setLocalities(locs);
+        const locs = res?.data || res;
+        if (Array.isArray(locs) && locs.length > 0) {
+          setLocalities(locs);
+        }
       } catch (e) {
-        console.warn('Could not load localities', e);
-      } finally {
-        setLoadingLocalities(false);
+        console.warn('Using bundled localities fallback:', e);
       }
     };
     fetchLocalities();
@@ -195,6 +196,38 @@ export const PostRide = () => {
       },
       { enableHighAccuracy: true, timeout: 12000, maximumAge: 5000 }
     );
+  };
+
+  // Direct Locality Dropdown Handlers
+  const handleOriginLocalitySelect = (localityName) => {
+    const loc = localities.find((l) => l.locality === localityName);
+    if (loc) {
+      setForm((prev) => ({
+        ...prev,
+        originLocality: loc.locality,
+        originName: loc.name,
+        originCoords: loc.coordinates,
+        costPerSeat: Math.max(30, Math.round((loc.distanceKm || 15) * 2.5))
+      }));
+      setErrors((prev) => ({ ...prev, originName: '' }));
+    } else {
+      setForm((prev) => ({ ...prev, originLocality: localityName }));
+    }
+  };
+
+  const handleDestLocalitySelect = (localityName) => {
+    const loc = localities.find((l) => l.locality === localityName);
+    if (loc) {
+      setForm((prev) => ({
+        ...prev,
+        destLocality: loc.locality,
+        destName: loc.name,
+        destCoords: loc.coordinates
+      }));
+      setErrors((prev) => ({ ...prev, destName: '' }));
+    } else {
+      setForm((prev) => ({ ...prev, destLocality: localityName }));
+    }
   };
 
   // Quick corridor shortcut selector
@@ -450,78 +483,89 @@ export const PostRide = () => {
                 </div>
               )}
 
-              {/* Uber-style Connected Location Inputs (No Dropdowns!) */}
-              <div className="card border-0 bg-light p-3 rounded-4 mb-4 position-relative">
-                <div className="d-flex align-items-center justify-content-between mb-3">
-                  <span className="small fw-bold text-uppercase text-secondary" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>
-                    Route Stops &bull; Real Road Network
-                  </span>
-                  <span className="badge bg-dark text-white rounded-pill px-2 py-1" style={{ fontSize: '0.68rem' }}>
-                    Uber-style Auto-Suggest
-                  </span>
-                </div>
-
-                <div className="position-relative">
-                  {/* Origin Location Input */}
-                  <LocationSearchInput
-                    label="Pickup Location"
-                    placeholder="Enter pickup location (e.g. Dehu Phata, Wakad, Hinjawadi)"
-                    value={form.originName}
-                    iconType="pickup"
-                    localities={localities}
-                    error={errors.originName}
-                    onSelect={(loc) => {
-                      setForm((prev) => ({
-                        ...prev,
-                        originLocality: loc.locality,
-                        originName: loc.name,
-                        originCoords: loc.coordinates,
-                        costPerSeat: Math.max(30, Math.round((loc.distanceKm || 15) * 2.5))
-                      }));
-                      if (errors.originName) setErrors((prev) => ({ ...prev, originName: '' }));
-                    }}
-                    onChange={(text) => {
-                      setForm((prev) => ({ ...prev, originName: text }));
-                      if (errors.originName) setErrors((prev) => ({ ...prev, originName: '' }));
-                    }}
-                  />
-
-                  {/* Vertical route connector line */}
-                  <div
-                    style={{
-                      width: '2px',
-                      height: '24px',
-                      backgroundColor: '#111827',
-                      margin: '6px 0 6px 17px'
-                    }}
-                  />
-
-                  {/* Destination Location Input */}
-                  <LocationSearchInput
-                    label="Destination Location"
-                    placeholder="Enter destination (e.g. Pune station, MITAOE Alandi)"
-                    value={form.destName}
-                    iconType="destination"
-                    localities={localities}
-                    error={errors.destName}
-                    onSelect={(loc) => {
-                      setForm((prev) => ({
-                        ...prev,
-                        destLocality: loc.locality,
-                        destName: loc.name,
-                        destCoords: loc.coordinates
-                      }));
-                      if (errors.destName) setErrors((prev) => ({ ...prev, destName: '' }));
-                    }}
-                    onChange={(text) => {
-                      setForm((prev) => ({ ...prev, destName: text }));
-                      if (errors.destName) setErrors((prev) => ({ ...prev, destName: '' }));
-                    }}
-                  />
-                </div>
-              </div>
-
+              {/* Route & Locality Selection (Always Populated with 40+ Pune/PCMC Hubs) */}
               <div className="row g-3 mb-4">
+                {/* Origin Locality Select */}
+                <div className="col-md-6">
+                  <label className="form-label small fw-semibold d-flex justify-content-between align-items-center">
+                    <span>
+                      Origin Locality <span className="text-danger">*</span>
+                    </span>
+                    <span className="badge bg-light text-muted border" style={{ fontSize: '0.68rem' }}>
+                      {localities.length} Pune &amp; PCMC Hubs
+                    </span>
+                  </label>
+                  <select
+                    className="form-select shadow-sm"
+                    name="originLocality"
+                    value={form.originLocality}
+                    onChange={(e) => handleOriginLocalitySelect(e.target.value)}
+                  >
+                    {localities.map((loc) => (
+                      <option key={loc.locality} value={loc.locality}>
+                        {loc.locality} &bull; {loc.name} ({loc.distanceKm} km to MITAOE)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Pickup Landmark / Spot */}
+                <div className="col-md-6">
+                  <label className="form-label small fw-semibold">
+                    Pickup Landmark / Spot <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    className={`form-control shadow-sm ${errors.originName ? 'is-invalid' : ''}`}
+                    placeholder="e.g. Dehu Phata / Bhumkar Chowk / Phoenix Mall gate"
+                    name="originName"
+                    value={form.originName}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
+                  {errors.originName && <div className="form-feedback-error">{errors.originName}</div>}
+                </div>
+
+                {/* Destination Locality Select */}
+                <div className="col-md-6">
+                  <label className="form-label small fw-semibold d-flex justify-content-between align-items-center">
+                    <span>
+                      Destination Locality <span className="text-danger">*</span>
+                    </span>
+                    <span className="badge bg-light text-muted border" style={{ fontSize: '0.68rem' }}>
+                      Campus &amp; Transit Hubs
+                    </span>
+                  </label>
+                  <select
+                    className="form-select shadow-sm"
+                    name="destLocality"
+                    value={form.destLocality}
+                    onChange={(e) => handleDestLocalitySelect(e.target.value)}
+                  >
+                    {localities.map((loc) => (
+                      <option key={loc.locality} value={loc.locality}>
+                        {loc.locality} &bull; {loc.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Drop Landmark */}
+                <div className="col-md-6">
+                  <label className="form-label small fw-semibold">
+                    Drop Landmark <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    className={`form-control shadow-sm ${errors.destName ? 'is-invalid' : ''}`}
+                    placeholder="e.g. Pune Railway Station / MITAOE Main Entrance Gate"
+                    name="destName"
+                    value={form.destName}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
+                  {errors.destName && <div className="form-feedback-error">{errors.destName}</div>}
+                </div>
 
                 {/* Intermediate stops */}
                 <div className="col-12">

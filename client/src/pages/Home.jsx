@@ -4,12 +4,13 @@ import apiClient from '../api/client';
 import { RideCard } from '../components/RideCard';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { LocationSearchInput } from '../components/LocationSearchInput';
+import { DEFAULT_LOCALITIES } from '../utils/localities';
 
 export const Home = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [featuredRides, setFeaturedRides] = useState([]);
-  const [localities, setLocalities] = useState([]);
+  const [localities, setLocalities] = useState(DEFAULT_LOCALITIES);
   const [loading, setLoading] = useState(true);
   const [searchFrom, setSearchFrom] = useState('');
   const [searchTo, setSearchTo] = useState('MITAOE Campus, Alandi');

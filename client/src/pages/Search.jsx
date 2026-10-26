@@ -5,11 +5,12 @@ import { RideCard } from '../components/RideCard';
 import { RideFilter } from '../components/RideFilter';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { EmptyState } from '../components/EmptyState';
+import { DEFAULT_LOCALITIES } from '../utils/localities';
 
 export const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [rides, setRides] = useState([]);
-  const [localities, setLocalities] = useState([]);
+  const [localities, setLocalities] = useState(DEFAULT_LOCALITIES);
   const [loading, setLoading] = useState(true);
   const [meta, setMeta] = useState({ total: 0, page: 1, limit: 9, totalPages: 1 });
 
