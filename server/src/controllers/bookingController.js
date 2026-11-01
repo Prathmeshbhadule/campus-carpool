@@ -224,7 +224,8 @@ export const updateBookingStatus = async (req, res, next) => {
 };
 
 /**
- * Driver marks payment status (Cash or UPI at pickup settlement record)
+ * Record payment status (Cash or UPI at pickup settlement record)
+ * Both the passenger (submitting UPI UTR proof) and the driver (marking cash/UPI confirmed) can update.
  */
 export const updatePaymentStatus = async (req, res, next) => {
   try {
@@ -236,10 +237,17 @@ export const updatePaymentStatus = async (req, res, next) => {
     }
 
     const isDriver = booking.ride.driver.toString() === req.user._id.toString();
+    const isPassenger = booking.passenger.toString() === req.user._id.toString();
     const isAdmin = req.user.role === 'admin';
 
-    if (!isDriver && !isAdmin) {
-      return errorResponse(res, 403, 'Only the driver can record payment confirmation.');
+    // Both passenger (who pays via UPI) and driver (who acknowledges payment) can record payment
+    if (!isDriver && !isPassenger && !isAdmin) {
+      return errorResponse(res, 403, 'You are not authorized to update payment for this booking.');
+    }
+
+    // Passengers can only submit 'paid_upi' (recording their UTR)
+    if (isPassenger && !isDriver && !isAdmin && paymentStatus !== 'paid_upi') {
+      return errorResponse(res, 400, 'Passengers can only record UPI payments with transaction reference.');
     }
 
     booking.paymentStatus = paymentStatus;
@@ -247,6 +255,28 @@ export const updatePaymentStatus = async (req, res, next) => {
       booking.paymentNote = paymentNote;
     }
     await booking.save();
+
+    // If passenger recorded UPI payment, notify the driver
+    if (isPassenger && !isDriver) {
+      await Notification.create({
+        user: booking.ride.driver,
+        type: 'payment_received',
+        title: 'UPI Payment Recorded',
+        message: `${req.user.name} recorded UPI payment (₹${booking.totalFare}) with reference: ${paymentNote || 'Paid via UPI'}.`,
+        link: `/dashboard?tab=rides`
+      });
+    }
+
+    // If driver marked paid, notify the passenger
+    if (isDriver && !isPassenger) {
+      await Notification.create({
+        user: booking.passenger,
+        type: 'payment_confirmed',
+        title: 'Payment Acknowledged by Driver',
+        message: `Your driver confirmed receipt of payment (${paymentStatus === 'paid_cash' ? 'Cash' : 'UPI'}) for the ride from ${booking.ride.origin.locality}.`,
+        link: `/dashboard?tab=bookings`
+      });
+    }
 
     return successResponse(res, 200, `Payment status recorded as ${paymentStatus}.`, booking);
   } catch (error) {

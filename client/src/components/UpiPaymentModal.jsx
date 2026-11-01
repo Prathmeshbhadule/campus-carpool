@@ -225,13 +225,17 @@ export const UpiPaymentModal = ({
                 <div className="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow" style={{ width: '64px', height: '64px' }}>
                   <i className="bi bi-check-lg fs-1"></i>
                 </div>
-                <h4 className="fw-bold text-success mb-1">Payment Verified!</h4>
-                <p className="text-muted small mb-4">Direct UPI settlement confirmed for this commute.</p>
+                <h4 className="fw-bold text-success mb-1">Payment Verified &amp; Settled!</h4>
+                <p className="text-muted small mb-3">Direct UPI settlement confirmed for this commute.</p>
 
-                <div className="bg-light p-3 rounded-3 border text-start mb-4 small">
+                <div className="bg-light p-3 rounded-3 border text-start mb-3 small">
                   <div className="d-flex justify-content-between py-1 border-bottom">
                     <span className="text-muted">Settlement Status:</span>
                     <strong className="text-success"><i className="bi bi-patch-check-fill me-1"></i>VERIFIED</strong>
+                  </div>
+                  <div className="d-flex justify-content-between py-1 border-bottom">
+                    <span className="text-muted">Transaction ID:</span>
+                    <span className="font-monospace text-dark">{receipt.transactionId}</span>
                   </div>
                   <div className="d-flex justify-content-between py-1 border-bottom">
                     <span className="text-muted">Paid to Driver:</span>
@@ -247,12 +251,33 @@ export const UpiPaymentModal = ({
                   </div>
                   <div className="d-flex justify-content-between py-1 border-bottom">
                     <span className="text-muted">UPI Ref (UTR):</span>
-                    <span className="font-monospace text-dark">{receipt.utr}</span>
+                    <span className="font-monospace text-dark fw-bold">{receipt.utr}</span>
                   </div>
                   <div className="d-flex justify-content-between py-1">
                     <span className="text-muted">Date &amp; Time:</span>
                     <span className="text-secondary">{receipt.timestamp}</span>
                   </div>
+                </div>
+
+                <div className="d-flex flex-wrap gap-2 justify-content-center mb-3">
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary btn-sm"
+                    onClick={() => {
+                      const text = `🧾 MITAOE Carpool Payment Receipt\nStatus: VERIFIED\nTxn: ${receipt.transactionId}\nUTR: ${receipt.utr}\nAmount: ₹${receipt.amount}\nDriver: ${receipt.payeeName}\nTime: ${receipt.timestamp}`;
+                      navigator.clipboard.writeText(text);
+                      showSuccess('Receipt details copied!');
+                    }}
+                  >
+                    <i className="bi bi-clipboard me-1"></i> Copy Receipt
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline-dark btn-sm"
+                    onClick={() => window.print()}
+                  >
+                    <i className="bi bi-printer me-1"></i> Print
+                  </button>
                 </div>
 
                 <div className="d-flex gap-2 justify-content-center">

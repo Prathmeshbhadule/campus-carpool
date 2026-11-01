@@ -188,12 +188,16 @@ export const UpiPaymentPage = () => {
                 <i className="bi bi-check-lg fs-1"></i>
               </div>
               <h3 className="fw-bold text-success mb-1">Payment Verified &amp; Settled!</h3>
-              <p className="text-muted small mb-4">The driver has received the direct peer-to-peer UPI transfer.</p>
+              <p className="text-muted small mb-4">Direct peer-to-peer UPI transfer recorded for MITAOE Campus Carpool.</p>
 
-              <div className="bg-light p-3 rounded-3 border text-start mb-4 small">
+              <div className="bg-light p-3 rounded-3 border text-start mb-4 small" id="printable-receipt">
                 <div className="d-flex justify-content-between py-2 border-bottom">
                   <span className="text-muted">Settlement Status:</span>
-                  <strong className="text-success"><i className="bi bi-patch-check-fill me-1"></i>VERIFIED</strong>
+                  <strong className="text-success"><i className="bi bi-patch-check-fill me-1"></i>VERIFIED &amp; COMPLIANT</strong>
+                </div>
+                <div className="d-flex justify-content-between py-2 border-bottom">
+                  <span className="text-muted">Transaction ID:</span>
+                  <span className="font-monospace text-dark">{receipt.transactionId}</span>
                 </div>
                 <div className="d-flex justify-content-between py-2 border-bottom">
                   <span className="text-muted">Paid to Driver:</span>
@@ -208,13 +212,34 @@ export const UpiPaymentPage = () => {
                   <strong className="text-primary fs-5">₹{receipt.amount}</strong>
                 </div>
                 <div className="d-flex justify-content-between py-2 border-bottom">
-                  <span className="text-muted">UPI Ref (UTR):</span>
-                  <span className="font-monospace text-dark">{receipt.utr}</span>
+                  <span className="text-muted">UPI Ref / UTR:</span>
+                  <span className="font-monospace fw-bold text-dark">{receipt.utr}</span>
                 </div>
                 <div className="d-flex justify-content-between py-2">
                   <span className="text-muted">Timestamp:</span>
                   <span className="text-secondary">{receipt.timestamp}</span>
                 </div>
+              </div>
+
+              <div className="d-flex flex-wrap justify-content-center gap-2 mb-3">
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary btn-sm"
+                  onClick={() => {
+                    const text = `🧾 MITAOE Campus Carpool Payment Receipt\nStatus: VERIFIED\nTxn ID: ${receipt.transactionId}\nUTR: ${receipt.utr}\nAmount: ₹${receipt.amount}\nDriver: ${receipt.payeeName} (${receipt.payeeUpi})\nTimestamp: ${receipt.timestamp}`;
+                    navigator.clipboard.writeText(text);
+                    showSuccess('Receipt details copied to clipboard!');
+                  }}
+                >
+                  <i className="bi bi-clipboard me-1"></i> Copy Receipt Text
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline-dark btn-sm"
+                  onClick={() => window.print()}
+                >
+                  <i className="bi bi-printer me-1"></i> Print Receipt
+                </button>
               </div>
 
               <div className="d-flex justify-content-center gap-3">
@@ -225,8 +250,8 @@ export const UpiPaymentPage = () => {
                 >
                   Pay Another Ride
                 </button>
-                <Link to="/dashboard" className="btn btn-primary-carpool">
-                  Go to Dashboard
+                <Link to={bookingId ? "/dashboard?tab=bookings" : "/dashboard"} className="btn btn-primary-carpool">
+                  {bookingId ? "Back to My Bookings" : "Go to Dashboard"}
                 </Link>
               </div>
             </div>

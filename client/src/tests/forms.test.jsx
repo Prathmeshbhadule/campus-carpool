@@ -86,7 +86,11 @@ describe('Frontend Form Validation & Calculator Component Tests', () => {
   });
 
   it('Fare & CO2 Calculator dynamically updates savings when distance changes', () => {
-    render(<FareCO2Calculator initialDistance={20} />);
+    render(
+      <BrowserRouter>
+        <FareCO2Calculator initialDistance={20} />
+      </BrowserRouter>
+    );
 
     // Check that initial distance and calculated values render
     expect(screen.getByText(/20 km/i)).toBeDefined();

@@ -41,6 +41,19 @@ const PRESET_CORRIDORS = [
       { id: 's-4', name: 'Yerawada / Gunjan (Stop E)', km: 16 },
       { id: 's-5', name: 'MITAOE Campus, Alandi (Destination B)', km: 28, isDest: true }
     ]
+  },
+  {
+    id: 'corridor-dehu-alandi',
+    name: 'Corridor 4: Dehu Phata ➔ MITAOE Alandi ➔ Pune Station (via Bhosari, Dapodi)',
+    fullFare: 65,
+    vehicle: 'car',
+    stops: [
+      { id: 's-1', name: 'Dehu Phata / Dehu Road (Source A)', km: 0, isOrigin: true },
+      { id: 's-2', name: 'Bhosari MIDC (Stop C)', km: 9 },
+      { id: 's-3', name: 'MITAOE Campus, Alandi (Stop D)', km: 16 },
+      { id: 's-4', name: 'Dapodi / Khadki (Stop E)', km: 21 },
+      { id: 's-5', name: 'Pune Railway Station (Destination B)', km: 27, isDest: true }
+    ]
   }
 ];
 
@@ -673,24 +686,38 @@ export const MultiStopRouteFareCalculator = () => {
                 </div>
               ) : (
                 /* Payment Receipt View */
-                <div className="card p-3 border border-success bg-success-subtle text-success-emphasis mb-3">
+                <div className="card p-3 border border-success bg-success-subtle text-success-emphasis mb-3 shadow-sm">
                   <div className="d-flex justify-content-between align-items-center mb-2">
-                    <strong className="small"><i className="bi bi-patch-check-fill text-success me-1"></i> Payment Verified</strong>
+                    <strong className="small"><i className="bi bi-patch-check-fill text-success me-1"></i> Stage Payment Verified</strong>
                     <span className="badge bg-success">{simulatedReceipt.timestamp}</span>
                   </div>
-                  <div className="small">
-                    <div><strong>Txn Ref:</strong> {simulatedReceipt.txnRef}</div>
-                    <div><strong>UTR:</strong> {simulatedReceipt.utr}</div>
+                  <div className="small bg-white p-2 rounded border mb-2">
+                    <div><strong>Txn Ref:</strong> <span className="font-monospace">{simulatedReceipt.txnRef}</span></div>
+                    <div><strong>UPI UTR:</strong> <span className="font-monospace text-primary fw-bold">{simulatedReceipt.utr}</span></div>
                     <div><strong>Stage:</strong> {simulatedReceipt.passengerStop} ➔ {simulatedReceipt.dropStop}</div>
-                    <div><strong>Amount Settled:</strong> ₹{simulatedReceipt.amount}</div>
+                    <div><strong>Seats Booked:</strong> {simulatedReceipt.seats} seat(s) @ ₹{simulatedReceipt.ratePerSeat}/seat</div>
+                    <div className="pt-1 mt-1 border-top"><strong>Amount Settled:</strong> <span className="fs-6 text-success fw-bold">₹{simulatedReceipt.amount}</span></div>
                   </div>
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-outline-success mt-2"
-                    onClick={() => setSimulatedReceipt(null)}
-                  >
-                    Calculate Another Stage
-                  </button>
+                  <div className="d-flex gap-2">
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-success flex-fill"
+                      onClick={() => {
+                        const printContent = `MITAOE Carpool - Stage Payment Receipt\nTxn: ${simulatedReceipt.txnRef}\nUTR: ${simulatedReceipt.utr}\nFrom: ${simulatedReceipt.passengerStop}\nTo: ${simulatedReceipt.dropStop}\nAmount: ₹${simulatedReceipt.amount}\nTime: ${simulatedReceipt.timestamp}`;
+                        navigator.clipboard.writeText(printContent);
+                        alert('Receipt copied to clipboard for sharing!');
+                      }}
+                    >
+                      <i className="bi bi-clipboard-check me-1"></i> Copy Receipt
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-success flex-fill"
+                      onClick={() => setSimulatedReceipt(null)}
+                    >
+                      New Calculation
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
