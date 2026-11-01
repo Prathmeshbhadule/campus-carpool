@@ -14,6 +14,8 @@ export const LocationSearchInput = ({
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState(value);
   const [coords, setCoords] = useState(null);
+  const [liveResults, setLiveResults] = useState([]);
+  const [isSearchingLive, setIsSearchingLive] = useState(false);
 
   const containerRef = useRef(null);
   const inputWrapperRef = useRef(null);
@@ -23,6 +25,68 @@ export const LocationSearchInput = ({
   useEffect(() => {
     setQuery(value);
   }, [value]);
+
+  // Real-world live location search with OpenStreetMap / Photon geocoding (biased to Pune/Alandi)
+  useEffect(() => {
+    if (!query || query.trim().length < 2) {
+      setLiveResults([]);
+      setIsSearchingLive(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearchingLive(true);
+      try {
+        const cleanQuery = query.trim();
+        const res = await fetch(
+          `https://photon.komoot.io/api/?q=${encodeURIComponent(cleanQuery)}&lat=18.6756&lon=73.8906&limit=6`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          if (data && Array.isArray(data.features)) {
+            const parsed = data.features.map((f) => {
+              const p = f.properties || {};
+              const name = p.name || p.street || cleanQuery;
+              const street = p.street || '';
+              const district = p.district || p.locality || p.suburb || '';
+              const city = p.city || p.town || p.county || 'Pune';
+              const subtitle = [street, district, city].filter(Boolean).join(', ');
+              const lat = f.geometry?.coordinates?.[1] || 18.6756;
+              const lng = f.geometry?.coordinates?.[0] || 73.8906;
+
+              // Distance to MITAOE Alandi (18.6756, 73.8906)
+              const dLat = ((lat - 18.6756) * Math.PI) / 180;
+              const dLon = ((lng - 73.8906) * Math.PI) / 180;
+              const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos((18.6756 * Math.PI) / 180) *
+                  Math.cos((lat * Math.PI) / 180) *
+                  Math.sin(dLon / 2) *
+                  Math.sin(dLon / 2);
+              const dist = parseFloat((6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))).toFixed(1));
+
+              return {
+                name,
+                locality: district || city || 'Pune',
+                subtitle: subtitle || `${city}, Maharashtra`,
+                address: `${name}, ${subtitle}`,
+                coordinates: [lat, lng],
+                distanceKm: dist,
+                isLive: true
+              };
+            });
+            setLiveResults(parsed);
+          }
+        }
+      } catch {
+        // Silently continue with local suggestions
+      } finally {
+        setIsSearchingLive(false);
+      }
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [query]);
 
   // Calculate coordinates relative to viewport for fixed position portal
   const updateCoords = useCallback(() => {
@@ -135,6 +199,17 @@ export const LocationSearchInput = ({
     scored.sort((a, b) => b.matchCount - a.matchCount);
     return scored.map((item) => item.loc).slice(0, 8);
   }, [localities, query]);
+
+  // Merge instant local dataset matches + real-world live geocoded results
+  const combinedSuggestions = useMemo(() => {
+    const list = [...suggestions];
+    for (const live of liveResults) {
+      if (!list.some((s) => s.name?.toLowerCase() === live.name?.toLowerCase())) {
+        list.push(live);
+      }
+    }
+    return list;
+  }, [suggestions, liveResults]);
 
   const handleInputChange = (e) => {
     const val = e.target.value;
@@ -258,17 +333,18 @@ export const LocationSearchInput = ({
             }}
           >
             <div className="p-2 border-bottom bg-light d-flex justify-content-between align-items-center">
-              <span className="small text-muted fw-bold text-uppercase" style={{ fontSize: '0.72rem' }}>
+              <span className="small text-muted fw-bold text-uppercase d-flex align-items-center gap-1" style={{ fontSize: '0.72rem' }}>
                 {query.trim().length === 0 ? 'Suggested Locations' : `Matches for "${query}"`}
+                {isSearchingLive && <span className="spinner-border spinner-border-sm text-primary ms-1" style={{ width: '0.75rem', height: '0.75rem' }}></span>}
               </span>
               <span className="badge bg-secondary-subtle text-secondary" style={{ fontSize: '0.68rem' }}>
-                {suggestions.length} places
+                {combinedSuggestions.length} places
               </span>
             </div>
 
-            {suggestions.length > 0 ? (
+            {combinedSuggestions.length > 0 ? (
               <div className="list-group list-group-flush">
-                {suggestions.map((loc, idx) => (
+                {combinedSuggestions.map((loc, idx) => (
                   <button
                     key={idx}
                     type="button"
@@ -282,11 +358,16 @@ export const LocationSearchInput = ({
                         className="rounded-circle bg-light d-flex align-items-center justify-content-center text-dark flex-shrink-0"
                         style={{ width: '36px', height: '36px' }}
                       >
-                        <i className={idx < 2 && !query ? 'bi bi-clock-history fs-6' : 'bi bi-geo-alt-fill fs-6 text-primary'}></i>
+                        <i className={loc.isLive ? 'bi bi-geo-alt-fill fs-6 text-success' : idx < 2 && !query ? 'bi bi-clock-history fs-6' : 'bi bi-geo-alt-fill fs-6 text-primary'}></i>
                       </div>
                       <div className="overflow-hidden">
-                        <div className="fw-semibold text-dark text-truncate" style={{ fontSize: '0.92rem' }}>
-                          {loc.name}
+                        <div className="fw-semibold text-dark text-truncate d-flex align-items-center gap-2" style={{ fontSize: '0.92rem' }}>
+                          <span>{loc.name}</span>
+                          {loc.isLive && (
+                            <span className="badge bg-success-subtle text-success border border-success-subtle" style={{ fontSize: '0.62rem' }}>
+                              Real Map
+                            </span>
+                          )}
                         </div>
                         <div className="text-muted small text-truncate" style={{ fontSize: '0.78rem' }}>
                           {loc.subtitle || loc.address || `${loc.locality}, Pune/PCMC`}
@@ -300,14 +381,59 @@ export const LocationSearchInput = ({
                     )}
                   </button>
                 ))}
+
+                {query.trim().length > 0 && (
+                  <button
+                    type="button"
+                    className="list-group-item list-group-item-action border-top py-2 px-3 d-flex align-items-center gap-3 bg-light text-primary"
+                    onClick={() =>
+                      handleSelectSuggestion({
+                        name: query.trim(),
+                        locality: 'Pune Region',
+                        subtitle: 'Custom Pickup / Drop Spot',
+                        coordinates: [18.6756, 73.8906]
+                      })
+                    }
+                  >
+                    <div
+                      className="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center flex-shrink-0"
+                      style={{ width: '36px', height: '36px' }}
+                    >
+                      <i className="bi bi-geo-fill"></i>
+                    </div>
+                    <div className="overflow-hidden">
+                      <div className="fw-semibold text-dark text-truncate" style={{ fontSize: '0.88rem' }}>
+                        Use "<strong>{query.trim()}</strong>"
+                      </div>
+                      <div className="text-muted small" style={{ fontSize: '0.74rem' }}>
+                        Select as custom landmark or pickup spot
+                      </div>
+                    </div>
+                  </button>
+                )}
               </div>
             ) : (
               <div className="p-3 text-center text-muted small">
                 <i className="bi bi-geo-alt text-muted d-block fs-4 mb-1"></i>
                 No exact campus corridor found for "<strong>{query}</strong>".
-                <div className="mt-1 text-secondary" style={{ fontSize: '0.75rem' }}>
-                  You can still use this as your custom pickup or landmark!
-                </div>
+                {query.trim().length > 0 && (
+                  <div className="mt-2">
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-primary"
+                      onClick={() =>
+                        handleSelectSuggestion({
+                          name: query.trim(),
+                          locality: 'Pune Region',
+                          subtitle: 'Custom Pickup / Drop Spot',
+                          coordinates: [18.6756, 73.8906]
+                        })
+                      }
+                    >
+                      Use "{query.trim()}" as custom location
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>,
