@@ -83,7 +83,14 @@ export const RideCard = ({ ride }) => {
             {ride.driver?.name ? ride.driver.name.charAt(0) : 'D'}
           </div>
           <div>
-            <div className="fw-semibold text-dark small">{ride.driver?.name}</div>
+            <div className="fw-semibold text-dark small d-flex align-items-center gap-1">
+              <span>{ride.driver?.name}</span>
+              {ride.driver?.drivingLicense?.hasLicense && (
+                <span className="badge bg-success-subtle text-success border border-success-subtle py-0 px-1" style={{ fontSize: '0.65rem' }} title="RTO Driving License Verified">
+                  <i className="bi bi-shield-check"></i> DL Verified
+                </span>
+              )}
+            </div>
             <div className="d-flex align-items-center gap-1 text-muted" style={{ fontSize: '0.78rem' }}>
               <i className="bi bi-star-fill text-warning"></i>
               <span>{ride.driver?.rating?.average || 5.0}</span>

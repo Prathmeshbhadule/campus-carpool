@@ -90,6 +90,7 @@ export const PostRide = () => {
     vehicleType: user?.vehicle?.type === 'bike' ? 'bike' : 'car',
     vehicleModel: user?.vehicle?.model || '',
     vehiclePlate: user?.vehicle?.plate || '',
+    drivingLicenseNumber: user?.drivingLicense?.licenseNumber || '',
     notes: 'Leaving on time. Please arrive 5 minutes early at pickup spot.'
   });
 
@@ -316,6 +317,9 @@ export const PostRide = () => {
     if (name === 'vehiclePlate' && !user?.vehicle?.hasVehicle && !value.trim()) {
       error = 'Vehicle registration number is required';
     }
+    if (name === 'drivingLicenseNumber' && !user?.drivingLicense?.hasLicense && !value.trim()) {
+      error = 'A valid RTO Driving License Number is required to offer rides';
+    }
     return error;
   };
 
@@ -343,6 +347,11 @@ export const PostRide = () => {
     if (!user?.vehicle?.hasVehicle) {
       if (!form.vehicleModel.trim()) newErrors.vehicleModel = 'Vehicle model is required';
       if (!form.vehiclePlate.trim()) newErrors.vehiclePlate = 'Vehicle registration number is required';
+    }
+
+    const hasVerifiedDl = Boolean(user?.drivingLicense?.hasLicense && user?.drivingLicense?.licenseNumber);
+    if (!hasVerifiedDl && !form.drivingLicenseNumber.trim()) {
+      newErrors.drivingLicenseNumber = 'A valid RTO Driving License Number is required to offer rides';
     }
 
     if (form.departureDate && form.departureTime) {
@@ -387,6 +396,7 @@ export const PostRide = () => {
           model: form.vehicleModel || (form.vehicleType === 'bike' ? 'Motorcycle' : 'Private Car'),
           plate: form.vehiclePlate || 'Verified'
         },
+        drivingLicenseNumber: form.drivingLicenseNumber.trim().toUpperCase(),
         notes: form.notes
       };
 
@@ -707,6 +717,45 @@ export const PostRide = () => {
                     onChange={handleChange}
                   />
                   {errors.vehiclePlate && <div className="form-feedback-error">{errors.vehiclePlate}</div>}
+                </div>
+
+                {/* Driving License Verification Section */}
+                <div className="col-12">
+                  {user?.drivingLicense?.hasLicense && user?.drivingLicense?.licenseNumber ? (
+                    <div className="alert alert-success d-flex align-items-center justify-content-between p-2 px-3 mb-0">
+                      <span className="small">
+                        <i className="bi bi-shield-check text-success fs-5 me-2"></i>
+                        RTO Driving License Verified: <strong className="font-monospace">{user.drivingLicense.licenseNumber}</strong>
+                      </span>
+                      <span className="badge bg-success">
+                        <i className="bi bi-patch-check-fill me-1"></i> Authorized Driver
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-light rounded border">
+                      <label className="form-label small fw-semibold d-flex justify-content-between align-items-center mb-1">
+                        <span>
+                          <i className="bi bi-shield-check text-success me-1"></i>
+                          RTO Driving License Number <span className="text-danger">*</span>
+                        </span>
+                        <span className="badge bg-danger-subtle text-danger border border-danger-subtle small" style={{ fontSize: '0.68rem' }}>
+                          Statutory Requirement
+                        </span>
+                      </label>
+                      <input
+                        type="text"
+                        className={`form-control font-monospace ${errors.drivingLicenseNumber ? 'is-invalid' : ''}`}
+                        placeholder="e.g. MH14 20210012345 (Indian DL Number)"
+                        name="drivingLicenseNumber"
+                        value={form.drivingLicenseNumber}
+                        onChange={handleChange}
+                      />
+                      {errors.drivingLicenseNumber && <div className="form-feedback-error">{errors.drivingLicenseNumber}</div>}
+                      <div className="form-text text-muted small" style={{ fontSize: '0.74rem' }}>
+                        Under the Motor Vehicles Act, 1988, drivers must hold a valid Driving License to offer carpool seats. This number will be verified and saved to your profile.
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="col-12">

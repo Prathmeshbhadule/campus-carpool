@@ -7,12 +7,15 @@ import { successResponse, errorResponse } from '../utils/apiResponse.js';
  */
 export const register = async (req, res, next) => {
   try {
-    const { name, email, password, role, prn, department, phone, vehicle } = req.body;
+    const { name, email, password, role, prn, department, phone, vehicle, drivingLicense } = req.body;
 
     const existing = await User.findOne({ email: email.toLowerCase() });
     if (existing) {
       return errorResponse(res, 409, 'An account with this email address already exists.');
     }
+
+    const cleanDlNumber = (drivingLicense?.licenseNumber || '').trim().toUpperCase();
+    const hasDl = Boolean(drivingLicense?.hasLicense || cleanDlNumber);
 
     const user = await User.create({
       name,
@@ -22,7 +25,12 @@ export const register = async (req, res, next) => {
       prn: role === 'student' ? prn : undefined,
       department,
       phone,
-      vehicle: vehicle || { hasVehicle: false, type: 'none', model: '', plate: '' }
+      vehicle: vehicle || { hasVehicle: false, type: 'none', model: '', plate: '' },
+      drivingLicense: {
+        hasLicense: hasDl,
+        licenseNumber: cleanDlNumber,
+        verified: hasDl && cleanDlNumber.length >= 8
+      }
     });
 
     const token = generateToken({ id: user._id, role: user.role });

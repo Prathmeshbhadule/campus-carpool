@@ -83,6 +83,11 @@ const userSchema = new mongoose.Schema(
       model: { type: String, trim: true, default: '' },
       plate: { type: String, trim: true, default: '' }
     },
+    drivingLicense: {
+      hasLicense: { type: Boolean, default: false },
+      licenseNumber: { type: String, trim: true, uppercase: true, default: '' },
+      verified: { type: Boolean, default: false }
+    },
     rating: {
       average: { type: Number, default: 5.0, min: 1, max: 5 },
       count: { type: Number, default: 0 }

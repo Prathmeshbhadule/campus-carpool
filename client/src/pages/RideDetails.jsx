@@ -407,7 +407,18 @@ export const RideDetails = () => {
               </div>
               <div className="d-flex justify-content-between py-1">
                 <span>Campus Verification:</span>
-                <span className="text-success fw-semibold"><i className="bi bi-patch-check-fill me-1"></i> Verified</span>
+                <span className="text-success fw-semibold"><i className="bi bi-patch-check-fill me-1"></i> College Verified</span>
+              </div>
+              <div className="d-flex justify-content-between py-1">
+                <span>Driving License:</span>
+                {ride.driver?.drivingLicense?.hasLicense ? (
+                  <span className="text-success fw-semibold">
+                    <i className="bi bi-shield-check me-1"></i>
+                    RTO Licensed Driver
+                  </span>
+                ) : (
+                  <span className="text-muted">Standard Verified</span>
+                )}
               </div>
               {isAuthenticated && (
                 <div className="d-flex justify-content-between py-1">

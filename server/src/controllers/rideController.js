@@ -63,11 +63,34 @@ const lookupCoordinates = (localityName) => {
  */
 export const createRide = async (req, res, next) => {
   try {
-    const { origin, destination, viaRoute, departureTime, seatsTotal, costPerSeat, vehicle, notes } = req.body;
+    const { origin, destination, viaRoute, departureTime, seatsTotal, costPerSeat, vehicle, notes, drivingLicenseNumber } = req.body;
 
     const vehicleType = vehicle?.type || req.user.vehicle?.type || 'car';
     const vehicleModel = (vehicle?.model || req.user.vehicle?.model || '').trim();
     const vehiclePlate = (vehicle?.plate || req.user.vehicle?.plate || '').trim();
+
+    // Check Driving License compliance for driver authorization
+    const existingDl = req.user.drivingLicense?.hasLicense && req.user.drivingLicense?.licenseNumber;
+    const submittedDl = (drivingLicenseNumber || vehicle?.licenseNumber || '').trim().toUpperCase();
+
+    if (!existingDl && !submittedDl) {
+      return errorResponse(
+        res,
+        400,
+        'A valid RTO Driving License number is required to publish a campus carpool as a driver.'
+      );
+    }
+
+    // If new license number provided, update user profile automatically
+    if (submittedDl && (!existingDl || req.user.drivingLicense?.licenseNumber !== submittedDl)) {
+      await User.findByIdAndUpdate(req.user._id, {
+        drivingLicense: {
+          hasLicense: true,
+          licenseNumber: submittedDl,
+          verified: submittedDl.length >= 8
+        }
+      });
+    }
 
     // If passenger without registered vehicle is publishing, ensure vehicle model and plate are provided
     if (!req.user.vehicle?.hasVehicle && (!vehicleModel || !vehiclePlate)) {
@@ -107,7 +130,7 @@ export const createRide = async (req, res, next) => {
       notes: notes || ''
     });
 
-    const populated = await Ride.findById(ride._id).populate('driver', 'name email phone rating vehicle department role');
+    const populated = await Ride.findById(ride._id).populate('driver', 'name email phone rating vehicle department role drivingLicense');
 
     return successResponse(res, 201, 'Ride successfully published.', populated);
   } catch (error) {
@@ -242,7 +265,7 @@ export const getRides = async (req, res, next) => {
 
     const [rides, total] = await Promise.all([
       Ride.find(query)
-        .populate('driver', 'name email phone rating vehicle department role')
+        .populate('driver', 'name email phone rating vehicle department role drivingLicense')
         .sort(sortOption)
         .skip(skip)
         .limit(limitNum),
@@ -266,7 +289,7 @@ export const getRides = async (req, res, next) => {
 export const getRideById = async (req, res, next) => {
   try {
     const ride = await Ride.findById(req.params.id)
-      .populate('driver', 'name email phone rating vehicle department role');
+      .populate('driver', 'name email phone rating vehicle department role drivingLicense');
 
     if (!ride) {
       return errorResponse(res, 404, 'Ride not found.');

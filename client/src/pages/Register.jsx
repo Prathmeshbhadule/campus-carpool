@@ -19,7 +19,8 @@ export const Register = () => {
     hasVehicle: false,
     vehicleType: 'car',
     vehicleModel: '',
-    vehiclePlate: ''
+    vehiclePlate: '',
+    drivingLicenseNumber: ''
   });
 
   const [errors, setErrors] = useState({});
@@ -109,6 +110,10 @@ export const Register = () => {
           type: form.hasVehicle ? form.vehicleType : 'none',
           model: form.hasVehicle ? form.vehicleModel.trim() : '',
           plate: form.hasVehicle ? form.vehiclePlate.trim() : ''
+        },
+        drivingLicense: {
+          hasLicense: form.hasVehicle && Boolean(form.drivingLicenseNumber.trim()),
+          licenseNumber: form.drivingLicenseNumber.trim().toUpperCase()
         }
       };
 
@@ -323,6 +328,28 @@ export const Register = () => {
                           value={form.vehiclePlate}
                           onChange={handleChange}
                         />
+                      </div>
+                      <div className="col-12 mt-2">
+                        <label className="form-label small fw-semibold d-flex justify-content-between align-items-center">
+                          <span>
+                            <i className="bi bi-shield-check text-success me-1"></i>
+                            RTO Driving License Number
+                          </span>
+                          <span className="badge bg-success-subtle text-success border border-success-subtle small" style={{ fontSize: '0.68rem' }}>
+                            Required to Offer Rides
+                          </span>
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control form-control-sm font-monospace"
+                          placeholder="e.g. MH14 20210012345 (Indian DL No.)"
+                          name="drivingLicenseNumber"
+                          value={form.drivingLicenseNumber}
+                          onChange={handleChange}
+                        />
+                        <div className="form-text text-muted" style={{ fontSize: '0.72rem' }}>
+                          Verified statutory credential under Motor Vehicles Act, 1988 for campus driver safety.
+                        </div>
                       </div>
                     </div>
                   )}

@@ -21,6 +21,8 @@ export const Profile = () => {
   const [vehicleType, setVehicleType] = useState('car');
   const [vehicleModel, setVehicleModel] = useState('');
   const [vehiclePlate, setVehiclePlate] = useState('');
+  const [drivingLicenseNumber, setDrivingLicenseNumber] = useState('');
+  const [dlVerified, setDlVerified] = useState(false);
 
   useEffect(() => {
     const fetchProfileAndReviews = async () => {
@@ -41,6 +43,8 @@ export const Profile = () => {
         setVehicleType(u.vehicle?.type === 'bike' ? 'bike' : 'car');
         setVehicleModel(u.vehicle?.model || '');
         setVehiclePlate(u.vehicle?.plate || '');
+        setDrivingLicenseNumber(u.drivingLicense?.licenseNumber || '');
+        setDlVerified(Boolean(u.drivingLicense?.verified || (u.drivingLicense?.licenseNumber && u.drivingLicense.licenseNumber.length >= 8)));
       } catch (err) {
         console.warn('Profile fetch error:', err);
       } finally {
@@ -64,6 +68,11 @@ export const Profile = () => {
           type: hasVehicle ? vehicleType : 'none',
           model: hasVehicle ? vehicleModel.trim() : '',
           plate: hasVehicle ? vehiclePlate.trim() : ''
+        },
+        drivingLicense: {
+          hasLicense: Boolean(drivingLicenseNumber.trim()),
+          licenseNumber: drivingLicenseNumber.trim().toUpperCase(),
+          verified: drivingLicenseNumber.trim().length >= 8
         }
       };
 
@@ -263,6 +272,34 @@ export const Profile = () => {
                         value={vehiclePlate}
                         onChange={(e) => setVehiclePlate(e.target.value)}
                       />
+                    </div>
+
+                    <div className="col-12 mt-2 pt-2 border-top">
+                      <div className="d-flex justify-content-between align-items-center mb-1">
+                        <label className="form-label small fw-semibold mb-0">
+                          <i className="bi bi-shield-check text-success me-1"></i>
+                          RTO Driving License Number
+                        </label>
+                        {dlVerified ? (
+                          <span className="badge bg-success-subtle text-success border border-success-subtle small">
+                            <i className="bi bi-patch-check-fill me-1"></i> Verified DL
+                          </span>
+                        ) : (
+                          <span className="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle small">
+                            Required to Offer Rides
+                          </span>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        className="form-control font-monospace"
+                        placeholder="e.g. MH14 20210012345 (Indian DL Format)"
+                        value={drivingLicenseNumber}
+                        onChange={(e) => setDrivingLicenseNumber(e.target.value)}
+                      />
+                      <div className="form-text text-muted small" style={{ fontSize: '0.74rem' }}>
+                        Mandatory under Motor Vehicles Act, 1988 for campus driver authorization and passenger safety.
+                      </div>
                     </div>
                   </div>
                 )}

@@ -35,7 +35,7 @@ export const getProfile = async (req, res, next) => {
  */
 export const updateProfile = async (req, res, next) => {
   try {
-    const { name, department, phone, vehicle } = req.body;
+    const { name, department, phone, vehicle, drivingLicense } = req.body;
     const user = await User.findById(req.user._id);
 
     if (!user) {
@@ -51,6 +51,15 @@ export const updateProfile = async (req, res, next) => {
         type: vehicle.type || 'none',
         model: vehicle.model || '',
         plate: vehicle.plate || ''
+      };
+    }
+    if (drivingLicense) {
+      const cleanDl = (drivingLicense.licenseNumber || '').trim().toUpperCase();
+      const hasDl = Boolean(drivingLicense.hasLicense || cleanDl);
+      user.drivingLicense = {
+        hasLicense: hasDl,
+        licenseNumber: cleanDl,
+        verified: hasDl && cleanDl.length >= 8
       };
     }
 
