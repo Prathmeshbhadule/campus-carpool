@@ -11,6 +11,14 @@ export const PUNE_LOCALITIES = [
     distanceKm: 0
   },
   {
+    name: 'Dehu Phata, Alandi',
+    locality: 'Alandi',
+    subtitle: 'Dehu Phata Chowk / Alandi Devachi (near MITAOE)',
+    address: 'Dehu Phata Chowk, Alandi Devachi, Pune 412105',
+    coordinates: [18.6756, 73.8906],
+    distanceKm: 0.5
+  },
+  {
     name: 'Dehu Phata / Dehu Road',
     locality: 'Dehu Phata',
     subtitle: 'Old Mumbai-Pune Highway, PCMC',

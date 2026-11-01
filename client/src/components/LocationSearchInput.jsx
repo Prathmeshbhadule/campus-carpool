@@ -92,7 +92,7 @@ export const LocationSearchInput = ({
     };
   }, []);
 
-  // Filter localities based on query
+  // Filter localities based on query with intelligent multi-token ranking
   const suggestions = useMemo(() => {
     if (!Array.isArray(localities) || localities.length === 0) return [];
     if (!query || query.trim().length === 0) {
@@ -100,13 +100,40 @@ export const LocationSearchInput = ({
       return localities.slice(0, 6);
     }
     const q = query.toLowerCase().trim();
-    return localities.filter(
+
+    // 1. Direct continuous substring match
+    const directMatches = localities.filter(
       (loc) =>
         loc.name?.toLowerCase().includes(q) ||
         loc.locality?.toLowerCase().includes(q) ||
         loc.subtitle?.toLowerCase().includes(q) ||
         loc.address?.toLowerCase().includes(q)
     );
+
+    if (directMatches.length > 0) {
+      return directMatches.slice(0, 8);
+    }
+
+    // 2. Multi-word token match (e.g. "dehu phata alandi" matches locations containing "dehu", "phata", or "alandi")
+    const words = q.split(/[\s,/-]+/).filter((w) => w.length >= 2);
+    if (words.length === 0) return [];
+
+    const scored = [];
+    for (const loc of localities) {
+      const searchTarget = `${loc.name} ${loc.locality} ${loc.subtitle || ''} ${loc.address || ''}`.toLowerCase();
+      let matchCount = 0;
+      for (const w of words) {
+        if (searchTarget.includes(w)) {
+          matchCount++;
+        }
+      }
+      if (matchCount > 0) {
+        scored.push({ loc, matchCount });
+      }
+    }
+
+    scored.sort((a, b) => b.matchCount - a.matchCount);
+    return scored.map((item) => item.loc).slice(0, 8);
   }, [localities, query]);
 
   const handleInputChange = (e) => {
