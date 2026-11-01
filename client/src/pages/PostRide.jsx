@@ -507,90 +507,67 @@ export const PostRide = () => {
                 </div>
               )}
 
-              {/* Route & Locality Selection (Always Populated with 40+ Pune/PCMC Hubs) */}
+              {/* Route & Locality Selection (Uber-Style Predictive Search Inputs) */}
               <div className="row g-3 mb-4">
-                {/* Origin Locality Select */}
+                {/* Pickup Location Autocomplete */}
                 <div className="col-md-6">
-                  <label className="form-label small fw-semibold d-flex justify-content-between align-items-center">
-                    <span>
-                      Origin Locality <span className="text-danger">*</span>
-                    </span>
-                    <span className="badge bg-light text-muted border" style={{ fontSize: '0.68rem' }}>
-                      {localities.length} Pune &amp; PCMC Hubs
-                    </span>
-                  </label>
-                  <select
-                    className="form-select shadow-sm"
-                    name="originLocality"
-                    value={form.originLocality}
-                    onChange={(e) => handleOriginLocalitySelect(e.target.value)}
-                  >
-                    {localities.map((loc) => (
-                      <option key={loc.locality} value={loc.locality}>
-                        {loc.locality} &bull; {loc.name} ({loc.distanceKm} km to MITAOE)
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Pickup Landmark / Spot */}
-                <div className="col-md-6">
-                  <label className="form-label small fw-semibold">
-                    Pickup Landmark / Spot <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    className={`form-control shadow-sm ${errors.originName ? 'is-invalid' : ''}`}
-                    placeholder="e.g. Dehu Phata / Bhumkar Chowk / Phoenix Mall gate"
-                    name="originName"
+                  <LocationSearchInput
+                    label="Pickup Location & Landmark *"
+                    placeholder="Search or type pickup spot (e.g. Dehu Phata, Wakad)..."
                     value={form.originName}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
+                    iconType="pickup"
+                    localities={localities}
+                    error={errors.originName}
+                    onChange={(val) => {
+                      setForm((prev) => ({ ...prev, originName: val }));
+                      if (val.trim()) setErrors((prev) => ({ ...prev, originName: '' }));
+                    }}
+                    onSelect={(loc) => {
+                      setForm((prev) => ({
+                        ...prev,
+                        originLocality: loc.locality,
+                        originName: loc.name,
+                        originCoords: loc.coordinates,
+                        costPerSeat: Math.max(30, Math.round((loc.distanceKm || 15) * 2.5))
+                      }));
+                      setErrors((prev) => ({ ...prev, originName: '' }));
+                    }}
                   />
-                  {errors.originName && <div className="form-feedback-error">{errors.originName}</div>}
+                  <div className="form-text small text-muted d-flex align-items-center gap-1 mt-1" style={{ fontSize: '0.78rem' }}>
+                    <i className="bi bi-geo-alt text-primary"></i> Corridor Locality: <span className="fw-semibold text-dark">{form.originLocality || 'Auto-detected'}</span>
+                  </div>
                 </div>
 
-                {/* Destination Locality Select */}
+                {/* Destination Drop Location Autocomplete */}
                 <div className="col-md-6">
-                  <label className="form-label small fw-semibold d-flex justify-content-between align-items-center">
-                    <span>
-                      Destination Locality <span className="text-danger">*</span>
-                    </span>
-                    <span className="badge bg-light text-muted border" style={{ fontSize: '0.68rem' }}>
-                      Campus &amp; Transit Hubs
-                    </span>
-                  </label>
-                  <select
-                    className="form-select shadow-sm"
-                    name="destLocality"
-                    value={form.destLocality}
-                    onChange={(e) => handleDestLocalitySelect(e.target.value)}
-                  >
-                    {localities.map((loc) => (
-                      <option key={loc.locality} value={loc.locality}>
-                        {loc.locality} &bull; {loc.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Drop Landmark */}
-                <div className="col-md-6">
-                  <label className="form-label small fw-semibold">
-                    Drop Landmark <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    className={`form-control shadow-sm ${errors.destName ? 'is-invalid' : ''}`}
-                    placeholder="e.g. Pune Railway Station / MITAOE Main Entrance Gate"
-                    name="destName"
+                  <LocationSearchInput
+                    label="Destination & Drop Spot *"
+                    placeholder="Search or type drop spot (e.g. Pune Station, MITAOE Alandi)..."
                     value={form.destName}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
+                    iconType="destination"
+                    localities={localities}
+                    error={errors.destName}
+                    onChange={(val) => {
+                      setForm((prev) => ({ ...prev, destName: val }));
+                      if (val.trim()) setErrors((prev) => ({ ...prev, destName: '' }));
+                    }}
+                    onSelect={(loc) => {
+                      setForm((prev) => ({
+                        ...prev,
+                        destLocality: loc.locality,
+                        destName: loc.name,
+                        destCoords: loc.coordinates
+                      }));
+                      setErrors((prev) => ({ ...prev, destName: '' }));
+                    }}
                   />
-                  {errors.destName && <div className="form-feedback-error">{errors.destName}</div>}
+                  <div className="form-text small text-muted d-flex align-items-center gap-1 mt-1" style={{ fontSize: '0.78rem' }}>
+                    <i className="bi bi-geo-alt text-primary"></i> Corridor Locality: <span className="fw-semibold text-dark">{form.destLocality || 'Auto-detected'}</span>
+                  </div>
                 </div>
+              </div>
 
+              <div className="row g-3 mb-4">
                 {/* Intermediate stops */}
                 <div className="col-12">
                   <label className="form-label small fw-semibold">
