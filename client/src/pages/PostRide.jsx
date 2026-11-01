@@ -310,6 +310,12 @@ export const PostRide = () => {
         error = 'Cost per seat must be between ₹0 and ₹500';
       }
     }
+    if (name === 'vehicleModel' && !user?.vehicle?.hasVehicle && !value.trim()) {
+      error = 'Vehicle model is required for passenger accounts publishing rides';
+    }
+    if (name === 'vehiclePlate' && !user?.vehicle?.hasVehicle && !value.trim()) {
+      error = 'Vehicle registration number is required';
+    }
     return error;
   };
 
@@ -333,6 +339,11 @@ export const PostRide = () => {
       const err = validateField(key, form[key]);
       if (err) newErrors[key] = err;
     });
+
+    if (!user?.vehicle?.hasVehicle) {
+      if (!form.vehicleModel.trim()) newErrors.vehicleModel = 'Vehicle model is required';
+      if (!form.vehiclePlate.trim()) newErrors.vehiclePlate = 'Vehicle registration number is required';
+    }
 
     if (form.departureDate && form.departureTime) {
       const departureDateTime = new Date(`${form.departureDate}T${form.departureTime}`);
@@ -410,6 +421,19 @@ export const PostRide = () => {
           Share your daily vehicle journey with fellow MITAOE students and faculty. Interactive Google Map and live GPS auto-detect your corridor.
         </p>
       </div>
+
+      {/* Passenger Notice Banner */}
+      {!user?.vehicle?.hasVehicle && (
+        <div className="alert alert-warning border-warning-subtle shadow-sm mb-4 d-flex align-items-center gap-3">
+          <i className="bi bi-info-circle-fill fs-3 text-warning flex-shrink-0"></i>
+          <div>
+            <div className="fw-bold">Passenger Account Notice:</div>
+            <div className="small text-secondary">
+              You are signed in as <strong>{user?.name || 'Passenger'}</strong> (registered without a vehicle). If you are offering a ride with your personal vehicle today, please specify your vehicle model and license plate below.
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Popular Corridor Quick-Select Chips */}
       <div className="mb-4 p-3 bg-white rounded-3 border shadow-sm">
@@ -679,27 +703,33 @@ export const PostRide = () => {
               <h5 className="fw-bold text-dark mb-3">3. Vehicle &amp; Rider Instructions</h5>
               <div className="row g-3 mb-4">
                 <div className="col-md-6">
-                  <label className="form-label small fw-semibold">Vehicle Make &amp; Model</label>
+                  <label className="form-label small fw-semibold">
+                    Vehicle Make &amp; Model {!user?.vehicle?.hasVehicle && <span className="text-danger">*</span>}
+                  </label>
                   <input
                     type="text"
-                    className="form-control"
+                    className={`form-control ${errors.vehicleModel ? 'is-invalid' : ''}`}
                     placeholder="e.g. Hyundai i20 / Swift / Classic 350"
                     name="vehicleModel"
                     value={form.vehicleModel}
                     onChange={handleChange}
                   />
+                  {errors.vehicleModel && <div className="form-feedback-error">{errors.vehicleModel}</div>}
                 </div>
 
                 <div className="col-md-6">
-                  <label className="form-label small fw-semibold">Registration Number</label>
+                  <label className="form-label small fw-semibold">
+                    Registration Number {!user?.vehicle?.hasVehicle && <span className="text-danger">*</span>}
+                  </label>
                   <input
                     type="text"
-                    className="form-control"
+                    className={`form-control ${errors.vehiclePlate ? 'is-invalid' : ''}`}
                     placeholder="e.g. MH 12 DE 3412"
                     name="vehiclePlate"
                     value={form.vehiclePlate}
                     onChange={handleChange}
                   />
+                  {errors.vehiclePlate && <div className="form-feedback-error">{errors.vehiclePlate}</div>}
                 </div>
 
                 <div className="col-12">

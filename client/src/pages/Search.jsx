@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import apiClient from '../api/client';
 import { RideCard } from '../components/RideCard';
 import { RideFilter } from '../components/RideFilter';
@@ -8,6 +9,7 @@ import { EmptyState } from '../components/EmptyState';
 import { DEFAULT_LOCALITIES } from '../utils/localities';
 
 export const Search = () => {
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [rides, setRides] = useState([]);
   const [localities, setLocalities] = useState(DEFAULT_LOCALITIES);
@@ -50,21 +52,28 @@ export const Search = () => {
       if (filters.minSeats) query.append('minSeats', filters.minSeats);
       if (filters.maxPrice) query.append('maxPrice', filters.maxPrice);
       if (filters.sortBy) query.append('sortBy', filters.sortBy);
+      if (user?._id) query.append('excludeDriver', user._id);
       query.append('page', filters.page || 1);
       query.append('limit', 9);
 
       setSearchParams(query);
 
       const res = await apiClient.get(`/rides?${query.toString()}`);
-      setRides(res.data || []);
-      setMeta(res.meta || { total: 0, page: 1, limit: 9, totalPages: 1 });
+      const rawRides = res.data || [];
+      // Guarantee exclusion of own rides when searching as passenger
+      const passengerRides = user?._id
+        ? rawRides.filter((r) => r.driver?._id !== user._id && r.driver !== user._id)
+        : rawRides;
+
+      setRides(passengerRides);
+      setMeta(res.meta || { total: passengerRides.length, page: 1, limit: 9, totalPages: 1 });
     } catch (err) {
       console.error('[Search] Error querying rides:', err);
       setRides([]);
     } finally {
       setLoading(false);
     }
-  }, [filters, setSearchParams]);
+  }, [filters, user, setSearchParams]);
 
   useEffect(() => {
     fetchRides();

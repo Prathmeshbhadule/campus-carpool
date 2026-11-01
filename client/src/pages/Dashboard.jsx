@@ -68,6 +68,18 @@ export const Dashboard = () => {
     }
   };
 
+  // Driver permanently deletes a ride
+  const handleDeleteRide = async (rideId) => {
+    if (!window.confirm('Are you sure you want to delete this ride?')) return;
+    try {
+      await apiClient.delete(`/rides/${rideId}`);
+      showSuccess('Ride deleted successfully');
+      await loadDashboardData();
+    } catch (err) {
+      showError(err.message || 'Failed to delete ride');
+    }
+  };
+
   // Driver opens ride passenger requests modal
   const handleViewRequests = async (ride) => {
     setSelectedRideRequests(ride);
@@ -318,6 +330,14 @@ export const Dashboard = () => {
                               Cancel
                             </button>
                           )}
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-outline-secondary"
+                            title="Delete Ride"
+                            onClick={() => handleDeleteRide(ride._id)}
+                          >
+                            <i className="bi bi-trash"></i>
+                          </button>
                           <Link to={`/rides/${ride._id}`} className="btn btn-light btn-sm border">
                             View
                           </Link>

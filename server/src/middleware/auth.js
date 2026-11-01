@@ -41,6 +41,35 @@ export const authenticate = async (req, res, next) => {
 };
 
 /**
+ * Optional authentication middleware:
+ * Attaches req.user if a valid token is provided, but does not block requests if not.
+ */
+export const optionalAuth = async (req, res, next) => {
+  try {
+    let token = null;
+
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+      token = req.headers.authorization.split(' ')[1];
+    } else if (req.cookies && req.cookies.token) {
+      token = req.cookies.token;
+    }
+
+    if (token) {
+      const decoded = verifyToken(token);
+      if (decoded && decoded.id) {
+        const user = await User.findById(decoded.id).select('-password');
+        if (user && user.isActive) {
+          req.user = user;
+        }
+      }
+    }
+  } catch {
+    // Continue silently if token is invalid
+  }
+  next();
+};
+
+/**
  * Role-Based Access Control (RBAC) middleware
  * @param  {...string} roles Allowed roles ('student', 'faculty', 'admin')
  */

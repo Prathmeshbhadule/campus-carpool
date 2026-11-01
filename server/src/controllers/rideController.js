@@ -5,6 +5,49 @@ import { PUNE_LOCALITIES } from '../utils/locations.js';
 import { successResponse, errorResponse } from '../utils/apiResponse.js';
 
 /**
+ * Helper to escape regex special characters
+ */
+const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * Builds list of regexes to match a location query against origin/destination/viaRoute
+ */
+const buildSearchRegexes = (input) => {
+  if (!input || typeof input !== 'string') return [];
+  const clean = input.trim();
+  if (!clean) return [];
+
+  const regexes = [];
+  // 1. Full clean string regex
+  regexes.push(new RegExp(escapeRegex(clean), 'i'));
+
+  // 2. Sub-phrases split by commas, slashes, hyphens (e.g. "MITAOE Campus, Alandi" -> "MITAOE Campus", "Alandi")
+  const subPhrases = clean
+    .split(/[,/-]+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length >= 3 && s.toLowerCase() !== clean.toLowerCase());
+
+  for (const phrase of subPhrases) {
+    regexes.push(new RegExp(escapeRegex(phrase), 'i'));
+  }
+
+  // 3. Significant keywords (length >= 4, ignoring common stop words)
+  const stopWords = new Set(['near', 'road', 'chowk', 'opp', 'behind', 'beside', 'front', 'area']);
+  const words = clean
+    .split(/[\s,/-]+/)
+    .map((w) => w.trim())
+    .filter((w) => w.length >= 4 && !stopWords.has(w.toLowerCase()));
+
+  for (const word of words) {
+    if (!regexes.some((r) => r.source.toLowerCase() === escapeRegex(word).toLowerCase())) {
+      regexes.push(new RegExp(escapeRegex(word), 'i'));
+    }
+  }
+
+  return regexes;
+};
+
+/**
  * Helper to get locality coordinates
  */
 const lookupCoordinates = (localityName) => {
@@ -21,6 +64,15 @@ const lookupCoordinates = (localityName) => {
 export const createRide = async (req, res, next) => {
   try {
     const { origin, destination, viaRoute, departureTime, seatsTotal, costPerSeat, vehicle, notes } = req.body;
+
+    const vehicleType = vehicle?.type || req.user.vehicle?.type || 'car';
+    const vehicleModel = (vehicle?.model || req.user.vehicle?.model || '').trim();
+    const vehiclePlate = (vehicle?.plate || req.user.vehicle?.plate || '').trim();
+
+    // If passenger without registered vehicle is publishing, ensure vehicle model and plate are provided
+    if (!req.user.vehicle?.hasVehicle && (!vehicleModel || !vehiclePlate)) {
+      return errorResponse(res, 400, 'Please provide vehicle model and registration plate number to publish a carpool.');
+    }
 
     const originCoords = origin.coordinates && origin.coordinates.length === 2 
       ? origin.coordinates 
@@ -48,9 +100,9 @@ export const createRide = async (req, res, next) => {
       seatsAvailable: seatsTotal,
       costPerSeat,
       vehicle: {
-        type: vehicle?.type || req.user.vehicle?.type || 'car',
-        model: vehicle?.model || req.user.vehicle?.model || '',
-        plate: vehicle?.plate || req.user.vehicle?.plate || ''
+        type: vehicleType,
+        model: vehicleModel || 'Private Vehicle',
+        plate: vehiclePlate || 'Private MH'
       },
       notes: notes || ''
     });
@@ -77,6 +129,7 @@ export const getRides = async (req, res, next) => {
       maxPrice,
       status,
       driverId,
+      excludeDriver,
       sortBy = 'departureTime',
       order = 'asc',
       page = 1,
@@ -108,6 +161,42 @@ export const getRides = async (req, res, next) => {
 
     if (driverId) {
       query.driver = driverId;
+    }
+
+    // Exclude current user's own rides when searching as passenger
+    const driverToExclude = excludeDriver || (!driverId && req.user ? req.user._id : null);
+    if (driverToExclude) {
+      query.driver = { $ne: driverToExclude };
+    }
+
+    // Filter by origin (checks origin landmark name, locality, or viaRoute)
+    if (origin && origin.trim()) {
+      const originRegexes = buildSearchRegexes(origin);
+      if (originRegexes.length > 0) {
+        query.$and = query.$and || [];
+        query.$and.push({
+          $or: [
+            { 'origin.name': { $in: originRegexes } },
+            { 'origin.locality': { $in: originRegexes } },
+            { 'viaRoute': { $in: originRegexes } }
+          ]
+        });
+      }
+    }
+
+    // Filter by destination (checks destination landmark name, locality, or viaRoute)
+    if (destination && destination.trim()) {
+      const destRegexes = buildSearchRegexes(destination);
+      if (destRegexes.length > 0) {
+        query.$and = query.$and || [];
+        query.$and.push({
+          $or: [
+            { 'destination.name': { $in: destRegexes } },
+            { 'destination.locality': { $in: destRegexes } },
+            { 'viaRoute': { $in: destRegexes } }
+          ]
+        });
+      }
     }
 
     // Filter by departure date/time

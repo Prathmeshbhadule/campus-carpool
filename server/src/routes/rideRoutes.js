@@ -12,12 +12,12 @@ import {
 import { createBooking, getRideRequests } from '../controllers/bookingController.js';
 import { createRideValidator, searchRideValidator } from '../validators/rideValidator.js';
 import { createBookingValidator } from '../validators/bookingValidator.js';
-import { authenticate } from '../middleware/auth.js';
+import { authenticate, optionalAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
 router.route('/')
-  .get(searchRideValidator, getRides)
+  .get(optionalAuth, searchRideValidator, getRides)
   .post(authenticate, createRideValidator, createRide);
 
 router.route('/:id')
