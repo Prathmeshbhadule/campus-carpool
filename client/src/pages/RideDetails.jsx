@@ -44,6 +44,53 @@ export const RideDetails = () => {
     fetchRide();
   }, [id]);
 
+  const ride = rideData?.ride || (rideData?._id ? rideData : null);
+  const bookings = rideData?.bookings || [];
+
+  // Derive intermediate boarding stages along route (Origin A -> C -> D -> E -> Destination B)
+  // Hook MUST be defined unconditionally before any early returns to satisfy React Rules of Hooks
+  const boardingStages = useMemo(() => {
+    if (!ride) return [];
+    const stages = [
+      {
+        id: 'origin',
+        name: `${ride.origin?.name || ride.origin?.locality || 'Origin'} (Source A)`,
+        locality: ride.origin?.locality || 'Origin',
+        isOrigin: true,
+        ratio: 1.0,
+        suggestedFare: ride.costPerSeat || 50
+      }
+    ];
+
+    const waypoints = Array.isArray(ride.viaRoute) ? ride.viaRoute : [];
+    const totalSegments = waypoints.length + 1;
+
+    waypoints.forEach((stop, index) => {
+      const remainingSegments = totalSegments - (index + 1);
+      const ratio = Math.max(0.2, remainingSegments / totalSegments);
+      const suggestedFare = Math.max(15, Math.round((ride.costPerSeat || 50) * ratio));
+      stages.push({
+        id: `waypoint-${index}`,
+        name: `${stop} (Stop ${String.fromCharCode(67 + index)})`,
+        locality: stop,
+        isWaypoint: true,
+        ratio,
+        suggestedFare
+      });
+    });
+
+    stages.push({
+      id: 'custom',
+      name: 'Custom Pickup Spot Along Route',
+      locality: 'Custom Spot',
+      isCustom: true,
+      ratio: 1.0,
+      suggestedFare: ride.costPerSeat || 50
+    });
+
+    return stages;
+  }, [ride]);
+
   if (loading) {
     return (
       <div className="container py-5">
@@ -51,9 +98,6 @@ export const RideDetails = () => {
       </div>
     );
   }
-
-  const ride = rideData?.ride || (rideData?._id ? rideData : null);
-  const bookings = rideData?.bookings || [];
 
   if (!ride) {
     return (
@@ -79,7 +123,7 @@ export const RideDetails = () => {
     );
   }
 
-  const isDriver = user && ride.driver?._id === user._id;
+  const isDriver = user && (ride.driver?._id === user._id || ride.driver === user._id);
   const departure = new Date(ride.departureTime);
   const isValidDate = !isNaN(departure.getTime());
   const formattedDate = isValidDate
@@ -101,51 +145,8 @@ export const RideDetails = () => {
     ? (departure < new Date() || ['completed', 'cancelled'].includes(ride.status))
     : ['completed', 'cancelled'].includes(ride.status);
   const isFull = (Number(ride.seatsAvailable) || 0) <= 0 || ride.status === 'full';
-  const hasAlreadyBooked = user && bookings.some((b) => b.passenger?._id === user._id && ['requested', 'approved'].includes(b.status));
-  const myBooking = bookings.find((b) => b.passenger?._id === user?._id);
-
-  // Derive intermediate boarding stages along route (Origin A -> C -> D -> E -> Destination B)
-  const boardingStages = useMemo(() => {
-    if (!ride) return [];
-    const stages = [
-      {
-        id: 'origin',
-        name: `${ride.origin?.name || ride.origin?.locality} (Source A)`,
-        locality: ride.origin?.locality || 'Origin',
-        isOrigin: true,
-        ratio: 1.0,
-        suggestedFare: ride.costPerSeat
-      }
-    ];
-
-    const waypoints = Array.isArray(ride.viaRoute) ? ride.viaRoute : [];
-    const totalSegments = waypoints.length + 1;
-
-    waypoints.forEach((stop, index) => {
-      const remainingSegments = totalSegments - (index + 1);
-      const ratio = Math.max(0.2, remainingSegments / totalSegments);
-      const suggestedFare = Math.max(15, Math.round(ride.costPerSeat * ratio));
-      stages.push({
-        id: `waypoint-${index}`,
-        name: `${stop} (Stop ${String.fromCharCode(67 + index)})`,
-        locality: stop,
-        isWaypoint: true,
-        ratio,
-        suggestedFare
-      });
-    });
-
-    stages.push({
-      id: 'custom',
-      name: 'Custom Pickup Spot Along Route',
-      locality: 'Custom Spot',
-      isCustom: true,
-      ratio: 1.0,
-      suggestedFare: ride.costPerSeat
-    });
-
-    return stages;
-  }, [ride]);
+  const hasAlreadyBooked = user && bookings.some((b) => (b.passenger?._id === user._id || b.passenger === user._id) && ['requested', 'approved'].includes(b.status));
+  const myBooking = bookings.find((b) => (b.passenger?._id === user?._id || b.passenger === user?._id));
 
   // Handle stage selection
   const handleStageSelect = (stageId) => {
