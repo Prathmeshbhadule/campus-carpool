@@ -269,7 +269,7 @@ export const RideDetails = () => {
                 </div>
               </div>
 
-              {ride.viaRoute && ride.viaRoute.length > 0 && (
+              {Array.isArray(ride.viaRoute) && ride.viaRoute.length > 0 && (
                 <div className="ps-4 ms-2 border-start border-2 my-2 py-2" style={{ borderColor: '#94a3b8' }}>
                   <div className="small text-muted fw-medium">
                     <i className="bi bi-signpost-split me-1 text-primary"></i>

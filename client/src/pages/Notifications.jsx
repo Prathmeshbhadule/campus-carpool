@@ -34,10 +34,13 @@ export const Notifications = () => {
             {notifications.length > 0 ? (
               <div className="d-flex flex-column gap-2">
                 {notifications.map((n) => {
-                  const date = new Date(n.createdAt);
+                  const rawDate = n.createdAt ? new Date(n.createdAt) : new Date();
+                  const date = !isNaN(rawDate.getTime()) ? rawDate : new Date();
+                  const formattedDate = date.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' });
+                  const formattedTime = date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
                   return (
                     <div
-                      key={n._id}
+                      key={n._id || Math.random()}
                       className={`p-3 rounded-3 border transition-fast ${
                         n.read ? 'bg-white' : 'bg-primary-subtle border-primary-subtle'
                       }`}
@@ -52,11 +55,10 @@ export const Notifications = () => {
                               n.type === 'ride_completed' ? 'bi-flag-fill text-primary' : 'bi-info-circle-fill text-secondary'
                             }`}
                           ></i>
-                          <h6 className="fw-bold mb-0 text-dark small">{n.title}</h6>
+                          <h6 className="fw-bold mb-0 text-dark small">{n.title || 'Notification'}</h6>
                         </div>
                         <span className="text-muted" style={{ fontSize: '0.75rem' }}>
-                          {date.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}{' '}
-                          {date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                          {formattedDate} {formattedTime}
                         </span>
                       </div>
 

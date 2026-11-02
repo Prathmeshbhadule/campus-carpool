@@ -52,7 +52,7 @@ export const RideCard = ({ ride }) => {
         </div>
 
         <div className="ps-2 ms-1 border-start border-2 my-1" style={{ borderColor: '#cbd5e1' }}>
-          {ride.viaRoute && ride.viaRoute.length > 0 && (
+          {Array.isArray(ride.viaRoute) && ride.viaRoute.length > 0 && (
             <div className="text-muted small py-1" style={{ fontSize: '0.8rem' }}>
               <i className="bi bi-signpost-split me-1 text-secondary"></i>
               Via: {ride.viaRoute.join(', ')}

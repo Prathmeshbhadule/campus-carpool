@@ -32,9 +32,10 @@ export const Profile = () => {
           apiClient.get(`/reviews/user/${user?._id}`)
         ]);
 
-        const u = profRes.data.user;
-        setProfileData(profRes.data);
-        setReviews(reviewsRes.data || []);
+        const profilePayload = profRes?.data || profRes;
+        const u = profilePayload?.user || profilePayload || user || {};
+        setProfileData(profilePayload);
+        setReviews(reviewsRes?.data || reviewsRes || []);
 
         setName(u.name || '');
         setDepartment(u.department || '');

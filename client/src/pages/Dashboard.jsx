@@ -249,7 +249,8 @@ export const Dashboard = () => {
           ) : myRides.length > 0 ? (
             <div className="row g-4">
               {myRides.map((ride) => {
-                const dep = new Date(ride.departureTime);
+                const dep = ride.departureTime ? new Date(ride.departureTime) : null;
+                const isValidDep = dep && !isNaN(dep.getTime());
                 return (
                   <div key={ride._id} className="col-lg-6">
                     <div className="card card-carpool p-4 h-100 border-0 shadow-sm">
@@ -262,9 +263,11 @@ export const Dashboard = () => {
                           } text-uppercase px-2 py-1`}>
                             {ride.status}
                           </span>
-                          <span className="text-muted small ms-2">
-                            {dep.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })} at {dep.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-                          </span>
+                          {isValidDep && (
+                            <span className="text-muted small ms-2">
+                              {dep.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })} at {dep.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          )}
                         </div>
                         <div className="text-end">
                           <span className="fw-bold text-dark fs-5">₹{ride.costPerSeat}</span>
@@ -368,7 +371,8 @@ export const Dashboard = () => {
           ) : myBookings.length > 0 ? (
             <div className="row g-4">
               {myBookings.map((b) => {
-                const dep = b.ride ? new Date(b.ride.departureTime) : null;
+                const dep = b.ride?.departureTime ? new Date(b.ride.departureTime) : null;
+                const isValidDep = dep && !isNaN(dep.getTime());
                 const canReview = b.ride?.status === 'completed' && b.status === 'completed';
                 return (
                   <div key={b._id} className="col-lg-6">
@@ -383,7 +387,7 @@ export const Dashboard = () => {
                           } text-uppercase px-2 py-1`}>
                             {b.status}
                           </span>
-                          {dep && (
+                          {isValidDep && (
                             <span className="text-muted small ms-2">
                               {dep.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })} at {dep.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                             </span>
@@ -398,18 +402,18 @@ export const Dashboard = () => {
                       {/* Route & Driver */}
                       <div className="mb-3">
                         <div className="fw-bold text-dark">
-                          {b.ride?.origin?.locality} &rarr; {b.ride?.destination?.locality}
+                          {b.ride?.origin?.locality || 'Pune'} &rarr; {b.ride?.destination?.locality || 'Campus'}
                         </div>
                         <div className="text-muted small">
-                          Boarding Spot: <strong>{b.boardingPoint || b.pickupSpot}</strong>
+                          Boarding Spot: <strong>{b.boardingPoint || b.pickupSpot || 'Designated Stop'}</strong>
                         </div>
                         <div className="text-secondary small mt-1">
-                          Driver: {b.ride?.driver?.name} ({b.ride?.driver?.phone || 'Campus Verified'})
+                          Driver: {b.ride?.driver?.name || 'Verified Driver'} ({b.ride?.driver?.phone || 'Campus Verified'})
                         </div>
                         <div className="small mt-1">
                           Payment Settlement:{' '}
                           <span className={`badge ${b.paymentStatus === 'pending' ? 'bg-light text-muted border' : 'bg-success-subtle text-success border border-success-subtle'}`}>
-                            {b.paymentStatus === 'pending' ? 'Pending (Pay Cash/UPI at pickup)' : `Settled (${b.paymentStatus.replace('paid_', '').toUpperCase()})`}
+                            {b.paymentStatus === 'pending' ? 'Pending (Pay Cash/UPI at pickup)' : `Settled (${(b.paymentStatus || '').replace('paid_', '').toUpperCase()})`}
                           </span>
                         </div>
                       </div>
@@ -531,9 +535,9 @@ export const Dashboard = () => {
                               </span>
                             </td>
                             <td>
-                              {req.paymentStatus !== 'pending' ? (
+                              {req.paymentStatus && req.paymentStatus !== 'pending' ? (
                                 <span className="badge bg-success-subtle text-success border border-success-subtle text-uppercase">
-                                  {req.paymentStatus.replace('paid_', '')}
+                                  {(req.paymentStatus || '').replace('paid_', '')}
                                 </span>
                               ) : (
                                 <div className="btn-group btn-group-sm">
