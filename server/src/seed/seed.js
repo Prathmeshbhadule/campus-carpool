@@ -46,7 +46,8 @@ const seedDatabase = async () => {
         role: 'faculty',
         department: 'School of Computer Engineering',
         phone: '9822112233',
-        vehicle: { hasVehicle: true, type: 'car', model: 'Honda City (Grey)', plate: 'MH 14 FX 4521' }
+        vehicle: { hasVehicle: true, type: 'car', model: 'Honda City (Grey)', plate: 'MH 14 FX 4521' },
+        drivingLicense: { hasLicense: true, licenseNumber: 'MH14 20080045210', verified: true }
       },
       {
         name: 'Dr. Sunita Sharma',
@@ -55,7 +56,8 @@ const seedDatabase = async () => {
         role: 'faculty',
         department: 'Information Technology',
         phone: '9822223344',
-        vehicle: { hasVehicle: true, type: 'car', model: 'Maruti Brezza (White)', plate: 'MH 12 AB 8901' }
+        vehicle: { hasVehicle: true, type: 'car', model: 'Maruti Brezza (White)', plate: 'MH 12 AB 8901' },
+        drivingLicense: { hasLicense: true, licenseNumber: 'MH12 20110089012', verified: true }
       },
       {
         name: 'Prof. Rajesh Patil',
@@ -64,7 +66,8 @@ const seedDatabase = async () => {
         role: 'faculty',
         department: 'Electronics & Telecommunication',
         phone: '9822334455',
-        vehicle: { hasVehicle: true, type: 'car', model: 'Toyota Glanza (Silver)', plate: 'MH 14 CZ 9988' }
+        vehicle: { hasVehicle: true, type: 'car', model: 'Toyota Glanza (Silver)', plate: 'MH 14 CZ 9988' },
+        drivingLicense: { hasLicense: true, licenseNumber: 'MH14 20140099881', verified: true }
       },
       {
         name: 'Aarav Deshmukh',
@@ -74,7 +77,8 @@ const seedDatabase = async () => {
         prn: '122100451001',
         department: 'School of Computer Engineering',
         phone: '9890123456',
-        vehicle: { hasVehicle: true, type: 'car', model: 'Hyundai i20 (Blue)', plate: 'MH 12 DE 3412' }
+        vehicle: { hasVehicle: true, type: 'car', model: 'Hyundai i20 (Blue)', plate: 'MH 12 DE 3412' },
+        drivingLicense: { hasLicense: true, licenseNumber: 'MH12 20210045101', verified: true }
       },
       {
         name: 'Ananya Joshi',
@@ -84,7 +88,8 @@ const seedDatabase = async () => {
         prn: '122100451002',
         department: 'Information Technology',
         phone: '9890234567',
-        vehicle: { hasVehicle: true, type: 'car', model: 'Tata Nexon EV (Teal)', plate: 'MH 14 EV 7721' }
+        vehicle: { hasVehicle: true, type: 'car', model: 'Tata Nexon EV (Teal)', plate: 'MH 14 EV 7721' },
+        drivingLicense: { hasLicense: true, licenseNumber: 'MH14 20220045102', verified: true }
       },
       {
         name: 'Rohan Shinde',
@@ -94,7 +99,8 @@ const seedDatabase = async () => {
         prn: '122100451003',
         department: 'Electronics & Telecommunication',
         phone: '9890345678',
-        vehicle: { hasVehicle: true, type: 'car', model: 'Maruti Swift (Red)', plate: 'MH 14 GH 5634' }
+        vehicle: { hasVehicle: true, type: 'car', model: 'Maruti Swift (Red)', plate: 'MH 14 GH 5634' },
+        drivingLicense: { hasLicense: true, licenseNumber: 'MH14 20210045103', verified: true }
       },
       {
         name: 'Snehal Patil',
@@ -114,7 +120,8 @@ const seedDatabase = async () => {
         prn: '122100451005',
         department: 'Mechanical Engineering',
         phone: '9890567890',
-        vehicle: { hasVehicle: true, type: 'bike', model: 'Royal Enfield Classic 350', plate: 'MH 12 RE 1928' }
+        vehicle: { hasVehicle: true, type: 'bike', model: 'Royal Enfield Classic 350', plate: 'MH 12 RE 1928' },
+        drivingLicense: { hasLicense: true, licenseNumber: 'MH12 20220045105', verified: true }
       },
       {
         name: 'Pooja More',
