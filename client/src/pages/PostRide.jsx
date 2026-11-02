@@ -858,7 +858,7 @@ export const PostRide = () => {
                 <div className="d-flex align-items-start gap-2 mb-2">
                   <i className="bi bi-signpost-split text-warning mt-1"></i>
                   <div>
-                    <strong>Via Stops:</strong> {viaArray.join(' &bull; ')}
+                    <strong>Via Stops:</strong> {viaArray.join(' • ')}
                   </div>
                 </div>
               )}

@@ -1,3 +1,4 @@
+import { User } from '../models/User.js';
 import { Ride } from '../models/Ride.js';
 import { Booking } from '../models/Booking.js';
 import { Notification } from '../models/Notification.js';
