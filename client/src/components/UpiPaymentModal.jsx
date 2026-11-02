@@ -10,6 +10,7 @@ export const UpiPaymentModal = ({
   ride,
   driver,
   defaultAmount,
+  seatsCount,
   onPaymentSuccess
 }) => {
   const { showSuccess, showError } = useToast();
@@ -18,7 +19,7 @@ export const UpiPaymentModal = ({
   const payeePhone = driver?.phone || ride?.driver?.phone || '9890123456';
   const rawUpiId = `${payeePhone}@upi`;
 
-  const initialAmount = defaultAmount || booking?.totalFare || ride?.costPerSeat || 60;
+  const initialAmount = defaultAmount || booking?.totalFare || ride?.costPerSeat || 30;
   const [expectedAmount, setExpectedAmount] = useState(initialAmount);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [utrNumber, setUtrNumber] = useState('');
@@ -26,14 +27,18 @@ export const UpiPaymentModal = ({
   const [receipt, setReceipt] = useState(null);
   const [copiedField, setCopiedField] = useState(null);
 
-  // Synchronize initial amount when modal opens
+  // Synchronize initial amount when modal opens or props change
   useEffect(() => {
-    if (initialAmount) {
-      setExpectedAmount(initialAmount);
+    if (defaultAmount) {
+      setExpectedAmount(defaultAmount);
+    } else if (booking?.totalFare) {
+      setExpectedAmount(booking.totalFare);
+    } else if (ride?.costPerSeat) {
+      setExpectedAmount(ride.costPerSeat);
     }
     setReceipt(null);
     setUtrNumber('');
-  }, [initialAmount, isOpen]);
+  }, [defaultAmount, booking?.totalFare, ride?.costPerSeat, isOpen]);
 
   // Detect if user is on mobile or desktop browser
   const isMobileDevice = useMemo(() => {
@@ -49,7 +54,8 @@ export const UpiPaymentModal = ({
   // Construct NPCI Standard UPI URIs & Intents for specific apps
   const appUris = useMemo(() => {
     const amt = parseFloat(expectedAmount) > 0 ? parseFloat(expectedAmount).toFixed(2) : '1.00';
-    const note = `SynQro - ${ride?.origin?.locality || 'Pune'} to ${ride?.destination?.locality || 'Campus'}`;
+    const seatsLabel = booking?.seatsBooked || seatsCount || 1;
+    const note = `SynQro - ${ride?.origin?.locality || 'Pune'} to ${ride?.destination?.locality || 'Campus'} (${seatsLabel} seat${seatsLabel > 1 ? 's' : ''})`;
     const encNote = encodeURIComponent(note);
     const encName = encodeURIComponent(payeeName);
     const params = `pa=${rawUpiId}&pn=${encName}&am=${amt}&cu=INR&tn=${encNote}`;

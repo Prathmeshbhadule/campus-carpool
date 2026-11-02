@@ -573,21 +573,44 @@ export const RideDetails = () => {
 
                 {/* Seats selection */}
                 <div className="mb-3">
-                  <label className="form-label small fw-semibold">Seats to Reserve</label>
+                  <div className="d-flex justify-content-between align-items-center mb-1">
+                    <label className="form-label small fw-bold mb-0 text-dark">
+                      <i className="bi bi-people-fill text-primary me-1"></i> Number of Passengers / Seats
+                    </label>
+                    <span className="badge bg-secondary-subtle text-secondary border">
+                      {ride.seatsAvailable} seat{ride.seatsAvailable > 1 ? 's' : ''} available
+                    </span>
+                  </div>
                   <select
                     className={`form-select ${bookingErrors.seats ? 'is-invalid' : ''}`}
                     value={seatsToBook}
                     onChange={(e) => setSeatsToBook(Number(e.target.value))}
                   >
-                    {Array.from({ length: Math.max(1, Math.min(Number(ride.seatsAvailable) || 1, 4)) }).map((_, i) => (
+                    {Array.from({ length: Math.max(1, Number(ride.seatsAvailable) || 1) }).map((_, i) => (
                       <option key={i + 1} value={i + 1}>
-                        {i + 1} seat{i > 0 ? 's' : ''} (₹{effectivePerSeatFare * (i + 1)})
+                        {i + 1} Passenger{i > 0 ? 's' : ''} / Seat{i > 0 ? 's' : ''} &bull; ₹{effectivePerSeatFare * (i + 1)}
                       </option>
                     ))}
                   </select>
                   {bookingErrors.seats && (
                     <div className="form-feedback-error">{bookingErrors.seats}</div>
                   )}
+                </div>
+
+                {/* Live Fare Calculation Summary Card */}
+                <div className="bg-light p-3 rounded-3 border mb-3">
+                  <div className="d-flex justify-content-between text-muted small mb-1">
+                    <span>Base Fare per Seat:</span>
+                    <span className="fw-semibold text-dark">₹{effectivePerSeatFare}</span>
+                  </div>
+                  <div className="d-flex justify-content-between text-muted small mb-2">
+                    <span>Selected Seats:</span>
+                    <span className="fw-semibold text-dark">{seatsToBook} seat{seatsToBook > 1 ? 's' : ''}</span>
+                  </div>
+                  <div className="d-flex justify-content-between align-items-center pt-2 border-top">
+                    <span className="fw-bold text-dark">Total Commute Amount:</span>
+                    <span className="fw-bold fs-5 text-success">₹{calculatedTotalFare}</span>
+                  </div>
                 </div>
 
                 {/* Honest Payment Notice */}
@@ -603,7 +626,7 @@ export const RideDetails = () => {
                 {/* Instant Real-Time UPI QR Payment Button */}
                 <button
                   type="button"
-                  className="btn btn-outline-success w-100 py-2 mb-3 d-flex align-items-center justify-content-center gap-2"
+                  className="btn btn-outline-success w-100 py-2 mb-2 d-flex align-items-center justify-content-center gap-2 fw-semibold shadow-sm"
                   onClick={() => setShowUpiModal(true)}
                 >
                   <i className="bi bi-qr-code-scan"></i> Real-Time UPI QR &bull; ₹{calculatedTotalFare}
@@ -612,7 +635,7 @@ export const RideDetails = () => {
                 <button
                   type="submit"
                   disabled={submittingBooking}
-                  className="btn btn-primary-carpool w-100 py-2 d-flex align-items-center justify-content-center gap-2"
+                  className="btn btn-primary-carpool w-100 py-2 d-flex align-items-center justify-content-center gap-2 shadow-sm"
                 >
                   {submittingBooking ? (
                     <>
@@ -621,7 +644,7 @@ export const RideDetails = () => {
                     </>
                   ) : (
                     <>
-                      <i className="bi bi-send-check"></i> Request Seat &bull; ₹{calculatedTotalFare}
+                      <i className="bi bi-send-check"></i> Request {seatsToBook} Seat{seatsToBook > 1 ? 's' : ''} &bull; Total ₹{calculatedTotalFare}
                     </>
                   )}
                 </button>
@@ -708,6 +731,7 @@ export const RideDetails = () => {
         ride={ride}
         driver={ride.driver}
         defaultAmount={myBooking ? myBooking.totalFare : calculatedTotalFare}
+        seatsCount={seatsToBook}
         onPaymentSuccess={() => {
           fetchRide();
         }}
