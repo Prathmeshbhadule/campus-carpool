@@ -10,7 +10,7 @@ export const SplashScreen = () => {
       <div className="w-100 h-100 d-flex flex-column align-items-center justify-content-center p-2 position-relative">
         <img
           src="/logo.png"
-          alt="MITAOE Campus Carpool"
+          alt="SynQro - MITAOE Campus Carpool"
           style={{
             width: '100vw',
             height: '82vh',
@@ -29,8 +29,8 @@ export const SplashScreen = () => {
           }}
         >
           <div className="d-flex align-items-center justify-content-center gap-2 mb-2">
-            <span className="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 text-uppercase fw-semibold" style={{ letterSpacing: '0.5px' }}>
-              MITAOE Intra-Campus Transit
+            <span className="badge bg-primary text-white border-0 px-3 py-1 text-uppercase fw-bold" style={{ letterSpacing: '0.8px' }}>
+              SynQro &bull; MITAOE Transit
             </span>
           </div>
           <div className="d-flex align-items-center justify-content-center gap-2 text-secondary small">

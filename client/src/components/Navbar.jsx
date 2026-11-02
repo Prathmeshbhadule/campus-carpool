@@ -26,13 +26,13 @@ export const Navbar = () => {
           >
             <img
               src="/logo.png"
-              alt="MITAOE Campus Carpool"
+              alt="SynQro - MITAOE Campus Carpool"
               style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             />
           </div>
           <div>
-            <span className="fw-bold text-dark fs-5 tracking-tight d-block line-height-1">MITAOE Carpool</span>
-            <span className="brand-badge text-uppercase">Campus Transit</span>
+            <span className="fw-bold text-dark fs-5 tracking-tight d-block line-height-1">SynQro</span>
+            <span className="brand-badge text-uppercase">MITAOE Transit</span>
           </div>
         </Link>
 

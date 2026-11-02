@@ -1,11 +1,11 @@
 export const swaggerDocument = {
   openapi: '3.0.0',
   info: {
-    title: 'MITAOE Campus Carpool REST API',
+    title: 'SynQro — MITAOE Campus Carpool REST API',
     version: '1.0.0',
     description: 'Production-ready REST API for intra-campus ride sharing at MIT Academy of Engineering, Alandi, Pune.',
     contact: {
-      name: 'MITAOE Carpool Engineering Team',
+      name: 'SynQro Engineering Team',
       email: 'carpool@mitaoe.ac.in'
     }
   },

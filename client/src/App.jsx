@@ -135,7 +135,7 @@ export function App() {
                     <h1 className="display-4 fw-bold text-primary mb-2">404</h1>
                     <h4 className="fw-bold text-dark mb-2">Page Not Found</h4>
                     <p className="text-muted small mb-4">
-                      The requested route does not exist on MITAOE Campus Carpool.
+                      The requested route does not exist on SynQro (MITAOE Campus Carpool).
                     </p>
                     <a href="/" className="btn btn-primary-carpool">
                       Back to Home

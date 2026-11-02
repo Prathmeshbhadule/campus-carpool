@@ -170,8 +170,8 @@ export const MultiStopRouteFareCalculator = () => {
   const payeePhone = '9890123456';
   const rawUpiId = `${payeePhone}@upi`;
   const upiAmount = metrics.isValid ? metrics.totalFare.toFixed(2) : '10.00';
-  const stageNote = `MITAOE Carpool - ${boardStop?.name || 'Stage'} to ${dropStop?.name || 'Campus'}`;
-  const upiUri = `upi://pay?pa=${rawUpiId}&pn=MITAOE%20Carpool%20Driver&am=${upiAmount}&cu=INR&tn=${encodeURIComponent(stageNote)}`;
+  const stageNote = `SynQro - ${boardStop?.name || 'Stage'} to ${dropStop?.name || 'Campus'}`;
+  const upiUri = `upi://pay?pa=${rawUpiId}&pn=SynQro%20Carpool%20Driver&am=${upiAmount}&cu=INR&tn=${encodeURIComponent(stageNote)}`;
 
   useEffect(() => {
     let isMounted = true;
@@ -703,7 +703,7 @@ export const MultiStopRouteFareCalculator = () => {
                       type="button"
                       className="btn btn-sm btn-outline-success flex-fill"
                       onClick={() => {
-                        const printContent = `MITAOE Carpool - Stage Payment Receipt\nTxn: ${simulatedReceipt.txnRef}\nUTR: ${simulatedReceipt.utr}\nFrom: ${simulatedReceipt.passengerStop}\nTo: ${simulatedReceipt.dropStop}\nAmount: ₹${simulatedReceipt.amount}\nTime: ${simulatedReceipt.timestamp}`;
+                        const printContent = `SynQro (MITAOE Carpool) - Stage Payment Receipt\nTxn: ${simulatedReceipt.txnRef}\nUTR: ${simulatedReceipt.utr}\nFrom: ${simulatedReceipt.passengerStop}\nTo: ${simulatedReceipt.dropStop}\nAmount: ₹${simulatedReceipt.amount}\nTime: ${simulatedReceipt.timestamp}`;
                         navigator.clipboard.writeText(printContent);
                         alert('Receipt copied to clipboard for sharing!');
                       }}

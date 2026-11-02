@@ -89,12 +89,12 @@ export const FareCO2Calculator = ({ initialDistance = 18 }) => {
 
   const handleCopyImpact = () => {
     const periodLabel = timeHorizon === 'semester' ? 'this Semester (90 days)' : timeHorizon === 'month' ? 'this Month (22 days)' : 'today (1 trip)';
-    const text = `🌱 MITAOE Campus Carpool Green Impact:
+    const text = `🌱 SynQro (MITAOE Campus Carpool) Green Impact:
 - Commute: ${distanceKm} km with ${riders} riders (${vehicleType.toUpperCase()} - ${fuelType.toUpperCase()})
 - Student Fare: ₹${metrics.projectedFairShare} vs Solo Cab: ₹${metrics.projectedSoloFare}
 - Money Saved: ₹${metrics.projectedSavingsPerPerson} (${metrics.savingsPercentage}% off) ${periodLabel}
 - Carbon Prevented: ${metrics.co2SavedKg} kg CO₂ (equiv. ${metrics.treesEquivalent} trees absorbed)
-Join green student carpools at MITAOE Alandi!`;
+Join green student carpools on SynQro at MITAOE Alandi!`;
     navigator.clipboard.writeText(text);
     setCopiedSummary(true);
     setTimeout(() => setCopiedSummary(false), 2500);

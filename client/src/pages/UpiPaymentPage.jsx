@@ -38,7 +38,7 @@ export const UpiPaymentPage = () => {
   // Standard NPCI UPI URIs & App Intents
   const appUris = useMemo(() => {
     const amt = parseFloat(expectedAmount) > 0 ? parseFloat(expectedAmount).toFixed(2) : '1.00';
-    const note = `MITAOE Carpool - Intra Campus Commute`;
+    const note = `SynQro - Intra Campus Commute`;
     const encNote = encodeURIComponent(note);
     const encName = encodeURIComponent(payeeName);
     const params = `pa=${rawUpiId}&pn=${encName}&am=${amt}&cu=INR&tn=${encNote}`;
@@ -188,12 +188,16 @@ export const UpiPaymentPage = () => {
                 <i className="bi bi-check-lg fs-1"></i>
               </div>
               <h3 className="fw-bold text-success mb-1">Payment Verified &amp; Settled!</h3>
-              <p className="text-muted small mb-4">Direct peer-to-peer UPI transfer recorded for MITAOE Campus Carpool.</p>
+              <p className="text-muted small mb-4">Direct peer-to-peer UPI transfer recorded on SynQro (MITAOE Campus Carpool).</p>
 
               <div className="bg-light p-3 rounded-3 border text-start mb-4 small" id="printable-receipt">
                 <div className="d-flex justify-content-between py-2 border-bottom">
                   <span className="text-muted">Settlement Status:</span>
                   <strong className="text-success"><i className="bi bi-patch-check-fill me-1"></i>VERIFIED &amp; COMPLIANT</strong>
+                </div>
+                <div className="d-flex justify-content-between py-2 border-bottom">
+                  <span className="text-muted">Platform / Commute:</span>
+                  <strong className="text-dark">SynQro &bull; Campus Carpool</strong>
                 </div>
                 <div className="d-flex justify-content-between py-2 border-bottom">
                   <span className="text-muted">Transaction ID:</span>
@@ -226,7 +230,7 @@ export const UpiPaymentPage = () => {
                   type="button"
                   className="btn btn-outline-secondary btn-sm"
                   onClick={() => {
-                    const text = `🧾 MITAOE Campus Carpool Payment Receipt\nStatus: VERIFIED\nTxn ID: ${receipt.transactionId}\nUTR: ${receipt.utr}\nAmount: ₹${receipt.amount}\nDriver: ${receipt.payeeName} (${receipt.payeeUpi})\nTimestamp: ${receipt.timestamp}`;
+                    const text = `🧾 SynQro Payment Receipt (MITAOE Carpool)\nStatus: VERIFIED\nTxn ID: ${receipt.transactionId}\nUTR: ${receipt.utr}\nAmount: ₹${receipt.amount}\nDriver: ${receipt.payeeName} (${receipt.payeeUpi})\nTimestamp: ${receipt.timestamp}`;
                     navigator.clipboard.writeText(text);
                     showSuccess('Receipt details copied to clipboard!');
                   }}

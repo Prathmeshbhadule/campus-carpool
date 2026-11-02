@@ -49,7 +49,7 @@ export const UpiPaymentModal = ({
   // Construct NPCI Standard UPI URIs & Intents for specific apps
   const appUris = useMemo(() => {
     const amt = parseFloat(expectedAmount) > 0 ? parseFloat(expectedAmount).toFixed(2) : '1.00';
-    const note = `MITAOE Carpool - ${ride?.origin?.locality || 'Pune'} to ${ride?.destination?.locality || 'Campus'}`;
+    const note = `SynQro - ${ride?.origin?.locality || 'Pune'} to ${ride?.destination?.locality || 'Campus'}`;
     const encNote = encodeURIComponent(note);
     const encName = encodeURIComponent(payeeName);
     const params = `pa=${rawUpiId}&pn=${encName}&am=${amt}&cu=INR&tn=${encNote}`;
@@ -264,7 +264,7 @@ export const UpiPaymentModal = ({
                     type="button"
                     className="btn btn-outline-secondary btn-sm"
                     onClick={() => {
-                      const text = `🧾 MITAOE Carpool Payment Receipt\nStatus: VERIFIED\nTxn: ${receipt.transactionId}\nUTR: ${receipt.utr}\nAmount: ₹${receipt.amount}\nDriver: ${receipt.payeeName}\nTime: ${receipt.timestamp}`;
+                      const text = `🧾 SynQro Payment Receipt (MITAOE Carpool)\nStatus: VERIFIED\nTxn: ${receipt.transactionId}\nUTR: ${receipt.utr}\nAmount: ₹${receipt.amount}\nDriver: ${receipt.payeeName}\nTime: ${receipt.timestamp}`;
                       navigator.clipboard.writeText(text);
                       showSuccess('Receipt details copied!');
                     }}

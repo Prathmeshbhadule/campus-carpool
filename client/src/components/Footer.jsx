@@ -12,10 +12,11 @@ export const Footer = () => {
               <div className="bg-primary text-white rounded p-1 d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px' }}>
                 <i className="bi bi-car-front-fill fs-6"></i>
               </div>
-              <span className="fw-bold text-dark fs-6">MITAOE Campus Carpool</span>
+              <span className="fw-bold text-dark fs-6">SynQro</span>
+              <span className="badge bg-primary-subtle text-primary border border-primary-subtle" style={{ fontSize: '0.7rem' }}>MITAOE Carpool</span>
             </div>
             <p className="small mb-3 text-muted">
-              A verified intra-campus ride-sharing platform designed for students, faculty, and staff commuting across Pune and PCMC localities to the MIT Academy of Engineering campus in Alandi.
+              SynQro is the verified intra-campus ride-sharing platform designed for students, faculty, and staff commuting across Pune and PCMC localities to the MIT Academy of Engineering campus in Alandi.
             </p>
             <div className="small text-secondary">
               <span className="fw-semibold">Platform:</span> Verified Intra-Campus Transit Network<br />
@@ -58,7 +59,7 @@ export const Footer = () => {
 
         <div className="border-top pt-4 mt-4 d-flex flex-column flex-md-row justify-content-between align-items-center small text-muted">
           <div>
-            &copy; {new Date().getFullYear()} MITAOE Campus Carpool. All rights reserved.
+            &copy; {new Date().getFullYear()} SynQro &bull; MITAOE Campus Carpool. All rights reserved.
           </div>
           <div className="d-flex gap-3 mt-2 mt-md-0">
             <span className="badge bg-success-subtle text-success border border-success-subtle">

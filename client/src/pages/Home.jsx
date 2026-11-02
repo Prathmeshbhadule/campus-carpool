@@ -54,7 +54,7 @@ export const Home = () => {
           <div className="row align-items-center">
             <div className="col-lg-8 mx-auto text-center">
               <span className="badge bg-white text-primary fw-bold text-uppercase px-3 py-2 rounded-pill mb-3 shadow-sm">
-                <i className="bi bi-shield-check me-1"></i> Verified Intra-Campus Ridesharing
+                <i className="bi bi-shield-check me-1"></i> SynQro &bull; Verified Campus Ridesharing
               </span>
               <h1 className="display-5 fw-bold mb-3 tracking-tight">
                 Commute Smart. Share the Fare.
@@ -137,8 +137,8 @@ export const Home = () => {
       <section className="py-5">
         <div className="container">
           <div className="text-center mb-5">
-            <h2 className="fw-bold text-dark">How MITAOE Carpool Works</h2>
-            <p className="text-muted">A fair, safe, and transparent community commute for everyone on campus.</p>
+            <h2 className="fw-bold text-dark">How SynQro Works</h2>
+            <p className="text-muted">A fair, safe, and transparent community commute for everyone across MITAOE Alandi.</p>
           </div>
 
           <div className="row g-4">
