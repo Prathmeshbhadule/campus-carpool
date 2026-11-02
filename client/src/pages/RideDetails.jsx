@@ -23,7 +23,7 @@ export const RideDetails = () => {
   const [seatsToBook, setSeatsToBook] = useState(1);
   const [pickupSpot, setPickupSpot] = useState('');
   const [selectedStageId, setSelectedStageId] = useState('origin');
-  const [farePerSeat, setFarePerSeat] = useState(60);
+  const [farePerSeat, setFarePerSeat] = useState(0);
   const [isCustomFare, setIsCustomFare] = useState(false);
   const [bookingErrors, setBookingErrors] = useState({});
 
@@ -90,6 +90,16 @@ export const RideDetails = () => {
 
     return stages;
   }, [ride]);
+
+  // Synchronize initial fare and pickup spot when ride data loads
+  useEffect(() => {
+    if (ride?.costPerSeat && selectedStageId === 'origin' && !isCustomFare) {
+      setFarePerSeat(ride.costPerSeat);
+      if (!pickupSpot) {
+        setPickupSpot(ride.origin?.name || ride.origin?.locality || '');
+      }
+    }
+  }, [ride?.costPerSeat, ride?.origin?.name, ride?.origin?.locality, selectedStageId, isCustomFare]);
 
   if (loading) {
     return (
@@ -535,7 +545,7 @@ export const RideDetails = () => {
                         min="10"
                         max="500"
                         className={`form-control ${bookingErrors.fare ? 'is-invalid' : ''}`}
-                        value={farePerSeat}
+                        value={farePerSeat || ride.costPerSeat || 30}
                         onChange={(e) => {
                           setFarePerSeat(e.target.value);
                           setIsCustomFare(true);
