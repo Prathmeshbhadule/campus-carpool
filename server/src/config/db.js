@@ -15,6 +15,25 @@ export const connectDB = async () => {
 
     const conn = await mongoose.connect(ENV.MONGODB_URI);
     console.log(`[MongoDB] Connected successfully: ${conn.connection.host}/${conn.connection.name}`);
+
+    // Auto-backfill 4-digit Ride Start OTP for any existing legacy bookings
+    try {
+      import('../models/Booking.js').then(async ({ Booking }) => {
+        const missing = await Booking.find({
+          $or: [{ startOtp: null }, { startOtp: '' }, { startOtp: { $exists: false } }]
+        });
+        if (missing && missing.length > 0) {
+          for (const b of missing) {
+            b.startOtp = Math.floor(1000 + Math.random() * 9000).toString();
+            await b.save();
+          }
+          console.log(`[MongoDB] Auto-backfilled startOtp for ${missing.length} bookings.`);
+        }
+      }).catch(() => {});
+    } catch (e) {
+      // Non-blocking backfill
+    }
+
     return conn;
   } catch (error) {
     console.error(`[MongoDB] Connection error: ${error.message}`);

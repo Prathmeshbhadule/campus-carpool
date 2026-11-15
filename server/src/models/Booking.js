@@ -82,4 +82,12 @@ const bookingSchema = new mongoose.Schema(
 // Prevent redundant duplicate pending/approved bookings by the same user on the same ride
 bookingSchema.index({ ride: 1, passenger: 1, status: 1 });
 
+// Pre-save hook: automatically assign a secure 4-digit Ride Start OTP if not already present
+bookingSchema.pre('save', function (next) {
+  if (!this.startOtp) {
+    this.startOtp = Math.floor(1000 + Math.random() * 9000).toString();
+  }
+  next();
+});
+
 export const Booking = mongoose.model('Booking', bookingSchema);
