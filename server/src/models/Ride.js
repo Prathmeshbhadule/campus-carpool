@@ -67,6 +67,16 @@ const rideSchema = new mongoose.Schema(
       default: 'open',
       index: true
     },
+    paymentTiming: {
+      type: String,
+      enum: ['advance', 'on_boarding', 'post_ride'],
+      default: 'advance'
+    },
+    driverUpiId: {
+      type: String,
+      trim: true,
+      default: ''
+    },
     notes: {
       type: String,
       trim: true,

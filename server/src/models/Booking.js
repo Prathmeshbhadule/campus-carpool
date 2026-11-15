@@ -51,10 +51,27 @@ const bookingSchema = new mongoose.Schema(
       enum: ['pending', 'paid_cash', 'paid_upi'],
       default: 'pending'
     },
+    paymentTiming: {
+      type: String,
+      enum: ['advance', 'on_boarding', 'post_ride'],
+      default: 'advance'
+    },
     paymentNote: {
       type: String,
       default: '',
       trim: true
+    },
+    startOtp: {
+      type: String,
+      default: null
+    },
+    otpVerified: {
+      type: Boolean,
+      default: false
+    },
+    boardedAt: {
+      type: Date,
+      default: null
     }
   },
   {

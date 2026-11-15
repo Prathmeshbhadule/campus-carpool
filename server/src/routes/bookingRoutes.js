@@ -3,7 +3,9 @@ import {
   getMyBookings,
   getAllBookingsAdmin,
   updateBookingStatus,
-  updatePaymentStatus
+  updatePaymentStatus,
+  verifyRideOtp,
+  getUpcomingReminders
 } from '../controllers/bookingController.js';
 import {
   updateBookingStatusValidator,
@@ -15,9 +17,11 @@ const router = express.Router();
 
 router.use(authenticate);
 
+router.get('/upcoming-reminders', getUpcomingReminders);
 router.get('/', authorize('admin'), getAllBookingsAdmin);
 router.get('/my-bookings', getMyBookings);
 router.patch('/:id/status', updateBookingStatusValidator, updateBookingStatus);
 router.patch('/:id/payment', updatePaymentValidator, updatePaymentStatus);
+router.post('/:id/verify-otp', verifyRideOtp);
 
 export default router;

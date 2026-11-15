@@ -64,7 +64,7 @@ const lookupCoordinates = (localityName) => {
  */
 export const createRide = async (req, res, next) => {
   try {
-    const { origin, destination, viaRoute, departureTime, seatsTotal, costPerSeat, vehicle, notes, drivingLicenseNumber } = req.body;
+    const { origin, destination, viaRoute, departureTime, seatsTotal, costPerSeat, vehicle, notes, drivingLicenseNumber, paymentTiming, driverUpiId } = req.body;
 
     const vehicleType = vehicle?.type || req.user.vehicle?.type || 'car';
     const vehicleModel = (vehicle?.model || req.user.vehicle?.model || '').trim();
@@ -91,6 +91,12 @@ export const createRide = async (req, res, next) => {
           verified: submittedDl.length >= 8
         }
       });
+    }
+
+    // If driver provides UPI ID, persist it to user profile
+    const finalUpiId = (driverUpiId || req.user.upiId || '').trim();
+    if (finalUpiId && finalUpiId !== req.user.upiId) {
+      await User.findByIdAndUpdate(req.user._id, { upiId: finalUpiId });
     }
 
     // If passenger without registered vehicle is publishing, ensure vehicle model and plate are provided
@@ -123,6 +129,8 @@ export const createRide = async (req, res, next) => {
       seatsTotal,
       seatsAvailable: seatsTotal,
       costPerSeat,
+      paymentTiming: paymentTiming || 'advance',
+      driverUpiId: finalUpiId,
       vehicle: {
         type: vehicleType,
         model: vehicleModel || 'Private Vehicle',
@@ -131,7 +139,7 @@ export const createRide = async (req, res, next) => {
       notes: notes || ''
     });
 
-    const populated = await Ride.findById(ride._id).populate('driver', 'name email phone rating vehicle department role drivingLicense');
+    const populated = await Ride.findById(ride._id).populate('driver', 'name email phone rating vehicle department role drivingLicense upiId');
 
     return successResponse(res, 201, 'Ride successfully published.', populated);
   } catch (error) {
@@ -290,7 +298,7 @@ export const getRides = async (req, res, next) => {
 export const getRideById = async (req, res, next) => {
   try {
     const ride = await Ride.findById(req.params.id)
-      .populate('driver', 'name email phone rating vehicle department role drivingLicense');
+      .populate('driver', 'name email phone rating vehicle department role drivingLicense upiId');
 
     if (!ride) {
       return errorResponse(res, 404, 'Ride not found.');

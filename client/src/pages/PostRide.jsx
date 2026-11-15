@@ -91,6 +91,8 @@ export const PostRide = () => {
     vehicleModel: user?.vehicle?.model || '',
     vehiclePlate: user?.vehicle?.plate || '',
     drivingLicenseNumber: user?.drivingLicense?.licenseNumber || '',
+    paymentTiming: 'advance',
+    driverUpiId: user?.upiId || '',
     notes: 'Leaving on time. Please arrive 5 minutes early at pickup spot.'
   });
 
@@ -397,6 +399,8 @@ export const PostRide = () => {
           plate: form.vehiclePlate || 'Verified'
         },
         drivingLicenseNumber: form.drivingLicenseNumber.trim().toUpperCase(),
+        paymentTiming: form.paymentTiming,
+        driverUpiId: form.driverUpiId.trim(),
         notes: form.notes
       };
 
@@ -768,6 +772,96 @@ export const PostRide = () => {
                     value={form.notes}
                     onChange={handleChange}
                   ></textarea>
+                </div>
+
+                {/* 4. Payment Settlement & UPI Preference */}
+                <div className="col-12">
+                  <div className="p-3 bg-light rounded border">
+                    <label className="form-label small fw-semibold text-dark d-flex align-items-center gap-1 mb-2">
+                      <i className="bi bi-wallet2 text-primary"></i>
+                      <span>Payment Timing &amp; Settlement Preference</span>
+                    </label>
+                    <div className="row g-2 mb-3">
+                      <div className="col-md-4">
+                        <label className={`card p-2 border cursor-pointer h-100 ${form.paymentTiming === 'advance' ? 'border-primary bg-primary-subtle' : 'bg-white'}`}>
+                          <div className="d-flex align-items-start gap-2">
+                            <input
+                              type="radio"
+                              name="paymentTiming"
+                              value="advance"
+                              checked={form.paymentTiming === 'advance'}
+                              onChange={handleChange}
+                              className="form-check-input mt-1"
+                            />
+                            <div>
+                              <div className="fw-semibold small text-dark">Advance UPI Payment</div>
+                              <div className="text-muted" style={{ fontSize: '0.72rem' }}>Pay before ride to confirm seat &amp; avoid no-shows (Recommended).</div>
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+                      <div className="col-md-4">
+                        <label className={`card p-2 border cursor-pointer h-100 ${form.paymentTiming === 'on_boarding' ? 'border-primary bg-primary-subtle' : 'bg-white'}`}>
+                          <div className="d-flex align-items-start gap-2">
+                            <input
+                              type="radio"
+                              name="paymentTiming"
+                              value="on_boarding"
+                              checked={form.paymentTiming === 'on_boarding'}
+                              onChange={handleChange}
+                              className="form-check-input mt-1"
+                            />
+                            <div>
+                              <div className="fw-semibold small text-dark">Pay upon Boarding</div>
+                              <div className="text-muted" style={{ fontSize: '0.72rem' }}>Passenger pays via Cash or UPI when entering the vehicle.</div>
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+                      <div className="col-md-4">
+                        <label className={`card p-2 border cursor-pointer h-100 ${form.paymentTiming === 'post_ride' ? 'border-primary bg-primary-subtle' : 'bg-white'}`}>
+                          <div className="d-flex align-items-start gap-2">
+                            <input
+                              type="radio"
+                              name="paymentTiming"
+                              value="post_ride"
+                              checked={form.paymentTiming === 'post_ride'}
+                              onChange={handleChange}
+                              className="form-check-input mt-1"
+                            />
+                            <div>
+                              <div className="fw-semibold small text-dark">Pay Post Journey</div>
+                              <div className="text-muted" style={{ fontSize: '0.72rem' }}>Settlement completed after arriving at destination.</div>
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="row g-2">
+                      <div className="col-md-12">
+                        <label className="form-label small fw-semibold text-secondary mb-1">
+                          Driver UPI ID for Fare Collection
+                        </label>
+                        <div className="input-group input-group-sm">
+                          <span className="input-group-text bg-white">
+                            <i className="bi bi-qr-code text-primary"></i>
+                          </span>
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="e.g. 9890123456@okaxis / user@paytm / name@upi"
+                            name="driverUpiId"
+                            value={form.driverUpiId}
+                            onChange={handleChange}
+                          />
+                        </div>
+                        <div className="form-text small text-muted" style={{ fontSize: '0.72rem' }}>
+                          Approved passengers will see this UPI ID and a dynamic QR code to pay their fare directly to your account.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 

@@ -80,7 +80,9 @@ export const createBooking = async (req, res, next) => {
       boardingPoint: (boardingPoint && boardingPoint.trim()) ? boardingPoint.trim() : pickupSpot,
       pickupSpot,
       status: 'requested',
-      paymentStatus: 'pending'
+      paymentStatus: 'pending',
+      paymentTiming: updatedRide.paymentTiming || 'advance',
+      startOtp: Math.floor(1000 + Math.random() * 9000).toString()
     });
 
     // Notify driver about new seat booking request
@@ -112,7 +114,7 @@ export const getMyBookings = async (req, res, next) => {
         path: 'ride',
         populate: {
           path: 'driver',
-          select: 'name email phone rating vehicle department'
+          select: 'name email phone rating vehicle department upiId drivingLicense'
         }
       })
       .sort({ createdAt: -1 });
@@ -189,13 +191,23 @@ export const updateBookingStatus = async (req, res, next) => {
       });
     }
 
-    // Send notification
+    // If approved, ensure OTP exists and notify passenger with payment & OTP instructions
     if (status === 'approved') {
+      if (!booking.startOtp) {
+        booking.startOtp = Math.floor(1000 + Math.random() * 9000).toString();
+      }
+      await booking.save();
+
+      const isAdvance = booking.paymentTiming === 'advance' || booking.ride?.paymentTiming === 'advance';
+      const driverUpi = booking.ride?.driverUpiId ? ` via UPI (${booking.ride.driverUpiId})` : ' via UPI';
+
       await Notification.create({
         user: booking.passenger,
-        type: 'booking_approved',
-        title: 'Booking Approved!',
-        message: `Your booking for ride from ${booking.ride.origin.locality} has been approved. Meet at pickup spot: ${booking.pickupSpot}.`,
+        type: isAdvance ? 'payment_requested' : 'booking_approved',
+        title: isAdvance ? '💳 Payment Due: Ride Approved!' : '✅ Ride Confirmed: OTP Ready',
+        message: isAdvance
+          ? `Driver approved your seat! Please pay ₹${booking.totalFare}${driverUpi} in advance to confirm your boarding. Your Ride Start OTP is ${booking.startOtp}.`
+          : `Driver approved your seat! Your 4-digit Ride Start OTP is ${booking.startOtp} (share with driver when boarding). Payment: ₹${booking.totalFare} upon boarding.`,
         link: `/dashboard?tab=bookings`
       });
     } else if (status === 'rejected') {
@@ -285,6 +297,129 @@ export const updatePaymentStatus = async (req, res, next) => {
 };
 
 /**
+ * Verify Ride Start OTP (like Ola/Uber)
+ * Driver enters passenger's 4-digit OTP upon boarding
+ */
+export const verifyRideOtp = async (req, res, next) => {
+  try {
+    const { otp } = req.body;
+    if (!otp) {
+      return errorResponse(res, 400, '4-digit Ride Start OTP is required.');
+    }
+
+    const booking = await Booking.findById(req.params.id)
+      .populate('ride')
+      .populate('passenger', 'name phone email');
+
+    if (!booking) {
+      return errorResponse(res, 404, 'Booking not found.');
+    }
+
+    const isDriver = booking.ride.driver.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isDriver && !isAdmin) {
+      return errorResponse(res, 403, 'Only the driver can verify passenger OTP upon boarding.');
+    }
+
+    if (booking.status !== 'approved') {
+      return errorResponse(res, 400, `Cannot verify OTP for a booking with status "${booking.status}". Ride must be approved.`);
+    }
+
+    if (booking.otpVerified) {
+      return successResponse(res, 200, 'Passenger OTP already verified and boarded.', booking);
+    }
+
+    if (String(booking.startOtp).trim() !== String(otp).trim()) {
+      return errorResponse(res, 400, 'Invalid Ride OTP. Ask the passenger to check their booking card.');
+    }
+
+    booking.otpVerified = true;
+    booking.boardedAt = new Date();
+    await booking.save();
+
+    // Transition ride to ongoing if it is open or full
+    if (['open', 'full'].includes(booking.ride.status)) {
+      await Ride.findByIdAndUpdate(booking.ride._id, { status: 'ongoing' });
+    }
+
+    // Send notification to passenger
+    await Notification.create({
+      user: booking.passenger._id,
+      type: 'otp_verified',
+      title: '🚗 Boarded: Commute Started!',
+      message: `Your OTP was verified by the driver. You are safely boarded for commute to ${booking.ride.destination.locality}!`,
+      link: `/dashboard?tab=bookings`
+    });
+
+    return successResponse(res, 200, `OTP verified! ${booking.passenger.name} marked as boarded.`, booking);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get Upcoming Commute Reminders for both Passenger and Driver
+ */
+export const getUpcomingReminders = async (req, res, next) => {
+  try {
+    const now = new Date();
+    const pastWindow = new Date(now.getTime() - 2 * 60 * 60 * 1000); // 2 hours ago
+    const futureWindow = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours ahead
+
+    // Passenger upcoming approved bookings
+    const passengerBookings = await Booking.find({
+      passenger: req.user._id,
+      status: 'approved'
+    })
+      .populate({
+        path: 'ride',
+        match: {
+          departureTime: { $gte: pastWindow, $lte: futureWindow },
+          status: { $in: ['open', 'full', 'ongoing'] }
+        },
+        populate: {
+          path: 'driver',
+          select: 'name phone email vehicle upiId drivingLicense'
+        }
+      })
+      .sort({ createdAt: -1 });
+
+    const validPassengerReminders = passengerBookings.filter(b => b.ride != null);
+
+    // Driver upcoming active rides with approved bookings
+    const driverRides = await Ride.find({
+      driver: req.user._id,
+      departureTime: { $gte: pastWindow, $lte: futureWindow },
+      status: { $in: ['open', 'full', 'ongoing'] }
+    })
+      .populate('driver', 'name phone email upiId')
+      .sort({ departureTime: 1 });
+
+    // Populate passenger bookings for driver rides
+    const driverReminders = await Promise.all(
+      driverRides.map(async (ride) => {
+        const bookings = await Booking.find({
+          ride: ride._id,
+          status: { $in: ['approved', 'requested'] }
+        }).populate('passenger', 'name phone email department');
+        return {
+          ride,
+          bookings
+        };
+      })
+    );
+
+    return successResponse(res, 200, 'Upcoming commute reminders retrieved.', {
+      passengerReminders: validPassengerReminders,
+      driverReminders
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * Admin: Get all campus bookings across all rides
  */
 export const getAllBookingsAdmin = async (req, res, next) => {
@@ -295,7 +430,7 @@ export const getAllBookingsAdmin = async (req, res, next) => {
         path: 'ride',
         populate: {
           path: 'driver',
-          select: 'name email phone department vehicle drivingLicense'
+          select: 'name email phone department vehicle drivingLicense upiId'
         }
       })
       .sort({ createdAt: -1 })

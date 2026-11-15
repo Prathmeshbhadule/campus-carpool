@@ -20,6 +20,10 @@ export const Dashboard = () => {
   // Real-time UPI QR modal state
   const [upiModalData, setUpiModalData] = useState(null);
 
+  // Ola/Uber Style Ride Start OTP verification state
+  const [otpInput, setOtpInput] = useState({});
+  const [verifyingOtp, setVerifyingOtp] = useState({});
+
   // Selected ride for viewing passenger requests modal
   const [selectedRideRequests, setSelectedRideRequests] = useState(null);
   const [requestsList, setRequestsList] = useState([]);
@@ -128,6 +132,28 @@ export const Dashboard = () => {
     }
   };
 
+  // Driver verifies passenger's 4-digit Ride Start OTP upon boarding (like Ola/Uber)
+  const handleVerifyOtp = async (bookingId) => {
+    const code = (otpInput[bookingId] || '').trim();
+    if (!code || code.length !== 4) {
+      showError('Please enter a valid 4-digit Ride Start OTP.');
+      return;
+    }
+    setVerifyingOtp((prev) => ({ ...prev, [bookingId]: true }));
+    try {
+      const res = await apiClient.post(`/bookings/${bookingId}/verify-otp`, { otp: code });
+      showSuccess(res.message || 'OTP verified! Passenger marked as boarded.');
+      setRequestsList((prev) =>
+        prev.map((req) => (req._id === bookingId ? { ...req, otpVerified: true, boardedAt: new Date() } : req))
+      );
+      await loadDashboardData();
+    } catch (err) {
+      showError(err.message || 'Invalid Ride Start OTP.');
+    } finally {
+      setVerifyingOtp((prev) => ({ ...prev, [bookingId]: false }));
+    }
+  };
+
   // Passenger cancels their booking
   const handleCancelBooking = async (bookingId) => {
     if (!window.confirm('Are you sure you want to cancel this seat reservation?')) return;
@@ -162,6 +188,23 @@ export const Dashboard = () => {
       setSubmittingReview(false);
     }
   };
+
+  // Derive next upcoming commute (within next 24 hours) for Passenger and Driver
+  const now = new Date();
+  const next24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  const past2h = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+
+  const upcomingPassengerBooking = myBookings.find((b) => {
+    if (b.status !== 'approved' || !b.ride?.departureTime) return false;
+    const dep = new Date(b.ride.departureTime);
+    return dep >= past2h && dep <= next24h;
+  });
+
+  const upcomingDriverRide = myRides.find((r) => {
+    if (!['open', 'full', 'ongoing'].includes(r.status) || !r.departureTime) return false;
+    const dep = new Date(r.departureTime);
+    return dep >= past2h && dep <= next24h;
+  });
 
   return (
     <div className="container py-4">
@@ -248,6 +291,146 @@ export const Dashboard = () => {
           </button>
         </div>
       </div>
+
+      {/* Upcoming Commute Reminder - Passenger Mode */}
+      {upcomingPassengerBooking && (
+        <div className="card border-0 shadow-sm mb-4 rounded-3 overflow-hidden" style={{ borderLeft: '5px solid #2563eb' }}>
+          <div className="card-body p-4 bg-white">
+            <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+              <div>
+                <div className="d-flex align-items-center gap-2 mb-2">
+                  <span className="badge bg-primary d-inline-flex align-items-center gap-1">
+                    <i className="bi bi-alarm-fill"></i> Upcoming Commute Reminder
+                  </span>
+                  <span className="badge bg-success-subtle text-success border border-success-subtle">
+                    Seat Confirmed
+                  </span>
+                  {upcomingPassengerBooking.paymentTiming === 'advance' && upcomingPassengerBooking.paymentStatus === 'pending' && (
+                    <span className="badge bg-danger-subtle text-danger border border-danger-subtle">
+                      <i className="bi bi-clock-history me-1"></i> Advance UPI Payment Due
+                    </span>
+                  )}
+                </div>
+                <h5 className="fw-bold text-dark mb-1">
+                  {upcomingPassengerBooking.ride?.origin?.locality} &rarr; {upcomingPassengerBooking.ride?.destination?.locality}
+                </h5>
+                <div className="text-secondary small d-flex flex-wrap align-items-center gap-3 mt-1">
+                  <span>
+                    <i className="bi bi-calendar3 me-1 text-primary"></i>
+                    {new Date(upcomingPassengerBooking.ride.departureTime).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' })} at{' '}
+                    {new Date(upcomingPassengerBooking.ride.departureTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                  <span>
+                    <i className="bi bi-geo-alt-fill me-1 text-danger"></i>
+                    Boarding: <strong>{upcomingPassengerBooking.boardingPoint || upcomingPassengerBooking.pickupSpot}</strong>
+                  </span>
+                  <span>
+                    <i className="bi bi-person-fill me-1 text-success"></i>
+                    Driver: {upcomingPassengerBooking.ride?.driver?.name} ({upcomingPassengerBooking.ride?.driver?.phone})
+                  </span>
+                </div>
+              </div>
+
+              {/* Ola/Uber Style 4-Digit Ride Start OTP */}
+              <div className="d-flex flex-column flex-sm-row align-items-center gap-3 text-center text-md-end w-100 w-md-auto">
+                <div className="p-2 px-3 bg-light rounded-3 border text-center">
+                  <div className="small fw-semibold text-muted text-uppercase" style={{ fontSize: '0.68rem', letterSpacing: '0.05em' }}>
+                    <i className="bi bi-shield-check text-primary me-1"></i> Ride Start OTP
+                  </div>
+                  <div className="fs-3 fw-bold text-primary font-monospace tracking-widest my-1">
+                    {upcomingPassengerBooking.startOtp || '****'}
+                  </div>
+                  <div className="text-secondary" style={{ fontSize: '0.7rem' }}>
+                    {upcomingPassengerBooking.otpVerified ? (
+                      <span className="text-success fw-semibold"><i className="bi bi-check-circle-fill me-1"></i> Boarded &amp; Verified</span>
+                    ) : (
+                      'Share with driver upon boarding'
+                    )}
+                  </div>
+                </div>
+
+                <div className="d-flex flex-column gap-2 w-100 w-sm-auto">
+                  {upcomingPassengerBooking.paymentStatus === 'pending' && (
+                    <button
+                      type="button"
+                      className="btn btn-success btn-sm d-flex align-items-center justify-content-center gap-1 shadow-sm"
+                      onClick={() =>
+                        setUpiModalData({
+                          booking: upcomingPassengerBooking,
+                          ride: upcomingPassengerBooking.ride,
+                          driver: upcomingPassengerBooking.ride?.driver,
+                          defaultAmount: upcomingPassengerBooking.totalFare
+                        })
+                      }
+                    >
+                      <i className="bi bi-qr-code-scan"></i>
+                      <span>Pay ₹{upcomingPassengerBooking.totalFare} via UPI QR</span>
+                    </button>
+                  )}
+                  {upcomingPassengerBooking.ride?.driver?.phone && (
+                    <a
+                      href={`tel:${upcomingPassengerBooking.ride.driver.phone}`}
+                      className="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center gap-1"
+                    >
+                      <i className="bi bi-telephone-fill text-success"></i>
+                      <span>Call Driver</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Upcoming Departure Reminder - Driver Mode */}
+      {upcomingDriverRide && (
+        <div className="card border-0 shadow-sm mb-4 rounded-3 overflow-hidden" style={{ borderLeft: '5px solid #16a34a' }}>
+          <div className="card-body p-4 bg-white">
+            <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+              <div>
+                <div className="d-flex align-items-center gap-2 mb-2">
+                  <span className="badge bg-success d-inline-flex align-items-center gap-1">
+                    <i className="bi bi-steering"></i> Upcoming Driver Commute Reminder
+                  </span>
+                  <span className="badge bg-light text-dark border">
+                    {upcomingDriverRide.seatsAvailable} of {upcomingDriverRide.seatsTotal} seats available
+                  </span>
+                </div>
+                <h5 className="fw-bold text-dark mb-1">
+                  {upcomingDriverRide.origin?.locality} &rarr; {upcomingDriverRide.destination?.locality}
+                </h5>
+                <div className="text-secondary small d-flex flex-wrap align-items-center gap-3 mt-1">
+                  <span>
+                    <i className="bi bi-calendar3 me-1 text-primary"></i>
+                    {new Date(upcomingDriverRide.departureTime).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' })} at{' '}
+                    {new Date(upcomingDriverRide.departureTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                  <span>
+                    <i className="bi bi-car-front text-secondary me-1"></i>
+                    {upcomingDriverRide.vehicle?.model} ({upcomingDriverRide.vehicle?.plate})
+                  </span>
+                  <span>
+                    <i className="bi bi-wallet2 text-success me-1"></i>
+                    Fare: ₹{upcomingDriverRide.costPerSeat} / seat ({upcomingDriverRide.paymentTiming === 'advance' ? 'Advance UPI' : 'At Boarding'})
+                  </span>
+                </div>
+              </div>
+
+              <div className="d-flex gap-2">
+                <button
+                  type="button"
+                  className="btn btn-outline-success btn-sm d-flex align-items-center gap-1"
+                  onClick={() => handleViewRequests(upcomingDriverRide)}
+                >
+                  <i className="bi bi-people-fill"></i>
+                  <span>Manage Passengers &amp; Verify OTP</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Navigation Tabs */}
       <ul className="nav nav-pills mb-4 border-bottom pb-3 gap-2" role="tablist">
@@ -438,11 +621,36 @@ export const Dashboard = () => {
                         <div className="text-secondary small mt-1">
                           Driver: {b.ride?.driver?.name || 'Verified Driver'} ({b.ride?.driver?.phone || 'Campus Verified'})
                         </div>
-                        <div className="small mt-1">
-                          Payment Settlement:{' '}
-                          <span className={`badge ${b.paymentStatus === 'pending' ? 'bg-light text-muted border' : 'bg-success-subtle text-success border border-success-subtle'}`}>
-                            {b.paymentStatus === 'pending' ? 'Pending (Pay Cash/UPI at pickup)' : `Settled (${(b.paymentStatus || '').replace('paid_', '').toUpperCase()})`}
-                          </span>
+
+                        {/* Ola/Uber Style Ride Start OTP Badge */}
+                        {b.status === 'approved' && (
+                          <div className="p-2 px-3 my-2 rounded border border-primary bg-primary-subtle d-flex justify-content-between align-items-center">
+                            <div>
+                              <div className="small fw-bold text-primary text-uppercase" style={{ fontSize: '0.68rem' }}>
+                                <i className="bi bi-shield-check me-1"></i> Ride Start OTP (Ola/Uber Style)
+                              </div>
+                              <div className="fs-5 fw-bold text-dark font-monospace tracking-wide">
+                                {b.startOtp || '****'}
+                              </div>
+                            </div>
+                            <span className={`badge ${b.otpVerified ? 'bg-success text-white' : 'bg-white text-secondary border'} small`} style={{ fontSize: '0.72rem' }}>
+                              {b.otpVerified ? '✓ Boarded (OTP Verified)' : 'Share with Driver at vehicle'}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="small mt-1 d-flex flex-wrap align-items-center gap-2">
+                          <div>
+                            Payment:{' '}
+                            <span className={`badge ${b.paymentStatus === 'pending' ? 'bg-light text-muted border' : 'bg-success-subtle text-success border border-success-subtle'}`}>
+                              {b.paymentStatus === 'pending' ? 'Pending' : `Settled (${(b.paymentStatus || '').replace('paid_', '').toUpperCase()})`}
+                            </span>
+                          </div>
+                          {b.status === 'approved' && (
+                            <span className={`badge ${b.paymentTiming === 'advance' || b.ride?.paymentTiming === 'advance' ? 'bg-warning-subtle text-warning-emphasis border border-warning-subtle' : 'bg-light text-dark border'}`}>
+                              {b.paymentTiming === 'advance' || b.ride?.paymentTiming === 'advance' ? 'Advance UPI Payment' : 'Pay upon Boarding'}
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -540,6 +748,7 @@ export const Dashboard = () => {
                           <th>Fare</th>
                           <th>Status</th>
                           <th>Payment Settlement</th>
+                          <th>Boarding OTP (Ola/Uber)</th>
                           <th>Action</th>
                         </tr>
                       </thead>
@@ -599,6 +808,38 @@ export const Dashboard = () => {
                                     UPI
                                   </button>
                                 </div>
+                              )}
+                            </td>
+                            <td>
+                              {req.status === 'approved' ? (
+                                req.otpVerified ? (
+                                  <span className="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">
+                                    <i className="bi bi-shield-check"></i> Boarded (OTP Verified)
+                                  </span>
+                                ) : (
+                                  <div className="d-flex align-items-center gap-1">
+                                    <input
+                                      type="text"
+                                      maxLength="4"
+                                      placeholder="4-digit"
+                                      className="form-control form-control-sm text-center font-monospace"
+                                      style={{ width: '75px' }}
+                                      value={otpInput[req._id] || ''}
+                                      onChange={(e) => setOtpInput((prev) => ({ ...prev, [req._id]: e.target.value }))}
+                                    />
+                                    <button
+                                      type="button"
+                                      className="btn btn-sm btn-primary text-nowrap"
+                                      onClick={() => handleVerifyOtp(req._id)}
+                                      disabled={verifyingOtp[req._id]}
+                                      title="Verify passenger OTP upon boarding"
+                                    >
+                                      {verifyingOtp[req._id] ? '...' : 'Verify'}
+                                    </button>
+                                  </div>
+                                )
+                              ) : (
+                                <span className="text-muted small">&mdash;</span>
                               )}
                             </td>
                             <td>

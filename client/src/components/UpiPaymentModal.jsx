@@ -17,7 +17,7 @@ export const UpiPaymentModal = ({
 
   const payeeName = driver?.name || ride?.driver?.name || 'MITAOE Driver';
   const payeePhone = driver?.phone || ride?.driver?.phone || '9890123456';
-  const rawUpiId = `${payeePhone}@upi`;
+  const rawUpiId = driver?.upiId || ride?.driverUpiId || ride?.driver?.upiId || `${payeePhone}@upi`;
 
   const initialAmount = defaultAmount || booking?.totalFare || ride?.costPerSeat || 30;
   const [expectedAmount, setExpectedAmount] = useState(initialAmount);

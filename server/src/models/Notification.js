@@ -16,7 +16,13 @@ const notificationSchema = new mongoose.Schema(
         'booking_rejected',
         'booking_cancelled',
         'ride_completed',
-        'review_received'
+        'review_received',
+        'payment_requested',
+        'payment_received',
+        'payment_confirmed',
+        'ride_reminder',
+        'ride_started',
+        'otp_verified'
       ],
       required: true
     },
