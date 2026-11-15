@@ -88,8 +88,8 @@ export const Navbar = () => {
             </li>
             {isAdmin && (
               <li className="nav-item">
-                <NavLink className="nav-link text-danger fw-bold d-flex align-items-center gap-1" to="/admin">
-                  <i className="bi bi-shield-lock-fill"></i> Admin Portal
+                <NavLink className="nav-link text-primary fw-bold d-flex align-items-center gap-1" to="/admin">
+                  <i className="bi bi-shield-check text-primary"></i> Admin Portal
                 </NavLink>
               </li>
             )}

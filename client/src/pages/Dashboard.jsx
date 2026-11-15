@@ -180,8 +180,8 @@ export const Dashboard = () => {
         </div>
         <div className="d-flex gap-2">
           {user?.role === 'admin' && (
-            <Link to="/admin" className="btn btn-danger btn-sm d-flex align-items-center gap-1 shadow-sm">
-              <i className="bi bi-shield-lock-fill"></i> Admin Portal
+            <Link to="/admin" className="btn btn-outline-primary btn-sm d-flex align-items-center gap-1 shadow-sm">
+              <i className="bi bi-shield-check"></i> Admin Portal
             </Link>
           )}
           <Link to="/post-ride" className="btn btn-primary-carpool btn-sm d-flex align-items-center gap-1">
@@ -193,20 +193,25 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      {/* Administrator Direct Notice Banner */}
+      {/* Administrator Institutional Notice Banner */}
       {user?.role === 'admin' && (
-        <div className="alert alert-danger-subtle border border-danger-subtle p-3 mb-4 rounded-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 shadow-sm">
-          <div className="d-flex align-items-center gap-2">
-            <i className="bi bi-shield-lock-fill text-danger fs-4 flex-shrink-0"></i>
+        <div className="alert alert-light border border-primary-subtle p-3 mb-4 rounded-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 shadow-sm">
+          <div className="d-flex align-items-center gap-3">
+            <div className="rounded-circle bg-primary-subtle text-primary p-2 d-flex align-items-center justify-content-center" style={{ width: '42px', height: '42px', flexShrink: 0 }}>
+              <i className="bi bi-shield-check fs-4"></i>
+            </div>
             <div>
-              <div className="fw-bold text-danger small">Campus Transport Administrator Privileges Active</div>
+              <div className="fw-bold text-dark small d-flex align-items-center gap-2">
+                <span>Administrator Control Center</span>
+                <span className="badge bg-primary-subtle text-primary border border-primary-subtle" style={{ fontSize: '0.68rem' }}>Campus Oversight</span>
+              </div>
               <div className="text-secondary" style={{ fontSize: '0.78rem' }}>
-                You have elevated system oversight to moderate all student/faculty carpools, review RTO driving licenses, activate/suspend users, and inspect booking settlements.
+                You have authorized administrative access to moderate all student/faculty carpools, review RTO driving licenses, manage campus accounts, and inspect booking settlements.
               </div>
             </div>
           </div>
-          <Link to="/admin" className="btn btn-danger btn-sm text-nowrap">
-            Open Admin Control Center &rarr;
+          <Link to="/admin" className="btn btn-primary-carpool btn-sm text-nowrap">
+            Open Admin Portal &rarr;
           </Link>
         </div>
       )}
