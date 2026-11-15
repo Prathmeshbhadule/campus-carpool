@@ -39,7 +39,8 @@ export const Login = () => {
     try {
       const user = await login(email.trim(), password);
       showSuccess(`Welcome back, ${user.name}!`);
-      navigate(from, { replace: true });
+      const targetDestination = user.role === 'admin' && from === '/' ? '/admin' : from;
+      navigate(targetDestination, { replace: true });
     } catch (err) {
       showError(err.message || 'Invalid email or password.');
     } finally {

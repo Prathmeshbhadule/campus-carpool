@@ -4,7 +4,8 @@ import {
   updateProfile,
   getPublicProfile,
   listUsers,
-  toggleUserStatus
+  toggleUserStatus,
+  toggleLicenseVerification
 } from '../controllers/userController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 
@@ -17,5 +18,6 @@ router.get('/:id/public', getPublicProfile);
 // Admin-only endpoints
 router.get('/', authenticate, authorize('admin'), listUsers);
 router.patch('/:id/status', authenticate, authorize('admin'), toggleUserStatus);
+router.patch('/:id/verify-license', authenticate, authorize('admin'), toggleLicenseVerification);
 
 export default router;

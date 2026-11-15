@@ -283,3 +283,26 @@ export const updatePaymentStatus = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * Admin: Get all campus bookings across all rides
+ */
+export const getAllBookingsAdmin = async (req, res, next) => {
+  try {
+    const bookings = await Booking.find()
+      .populate('passenger', 'name email phone department prn role')
+      .populate({
+        path: 'ride',
+        populate: {
+          path: 'driver',
+          select: 'name email phone department vehicle drivingLicense'
+        }
+      })
+      .sort({ createdAt: -1 })
+      .limit(60);
+
+    return successResponse(res, 200, 'All campus bookings retrieved.', bookings);
+  } catch (error) {
+    next(error);
+  }
+};

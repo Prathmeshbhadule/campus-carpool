@@ -168,3 +168,38 @@ export const toggleUserStatus = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * Admin: Toggle driver's RTO license verification status
+ */
+export const toggleLicenseVerification = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return errorResponse(res, 404, 'User not found.');
+    }
+
+    if (!user.drivingLicense) {
+      user.drivingLicense = {
+        hasLicense: true,
+        licenseNumber: 'MH12 RTO-VERIFIED',
+        verified: true
+      };
+    } else {
+      user.drivingLicense.verified = !user.drivingLicense.verified;
+      if (user.drivingLicense.verified) {
+        user.drivingLicense.hasLicense = true;
+      }
+    }
+
+    await user.save();
+
+    return successResponse(res, 200, `Driver license ${user.drivingLicense.verified ? 'verified' : 'marked unverified'}.`, {
+      _id: user._id,
+      name: user.name,
+      drivingLicense: user.drivingLicense
+    });
+  } catch (error) {
+    next(error);
+  }
+};

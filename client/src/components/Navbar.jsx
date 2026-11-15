@@ -86,6 +86,13 @@ export const Navbar = () => {
                 <i className="bi bi-calculator me-1"></i> Fare &amp; CO₂ Calc
               </NavLink>
             </li>
+            {isAdmin && (
+              <li className="nav-item">
+                <NavLink className="nav-link text-danger fw-bold d-flex align-items-center gap-1" to="/admin">
+                  <i className="bi bi-shield-lock-fill"></i> Admin Portal
+                </NavLink>
+              </li>
+            )}
             <li className="nav-item d-flex align-items-center">
               <button
                 type="button"
