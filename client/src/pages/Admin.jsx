@@ -13,10 +13,13 @@ export const Admin = () => {
   const [rides, setRides] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastRefreshed, setLastRefreshed] = useState(new Date());
   const [userSearch, setUserSearch] = useState('');
   const [userRoleFilter, setUserRoleFilter] = useState('');
 
-  const loadAdminData = useCallback(async () => {
+  const loadAdminData = useCallback(async (isSilent = false) => {
+    if (!isSilent) setRefreshing(true);
     try {
       const [statsRes, platformRes, usersRes, ridesRes, bookingsRes] = await Promise.all([
         apiClient.get('/stats/admin').catch(() => ({ data: null })),
@@ -30,15 +33,22 @@ export const Admin = () => {
       setUsers(usersRes.data || []);
       setRides(ridesRes.data || []);
       setBookings(bookingsRes.data || []);
+      setLastRefreshed(new Date());
     } catch (err) {
-      showError(err.message || 'Failed to load administrative data');
+      if (!isSilent) showError(err.message || 'Failed to load administrative data');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, [userSearch, userRoleFilter, showError]);
 
   useEffect(() => {
     loadAdminData();
+    // Auto-refresh from MongoDB Atlas every 30 seconds
+    const interval = setInterval(() => {
+      loadAdminData(true);
+    }, 30000);
+    return () => clearInterval(interval);
   }, [loadAdminData]);
 
   // Toggle user activation state
@@ -112,13 +122,20 @@ export const Admin = () => {
   // Filter drivers for verification queue
   const driverAccounts = users.filter(u => u.vehicle?.hasVehicle || u.drivingLicense?.hasLicense || u.drivingLicense?.licenseNumber);
 
+  // Dynamic live calculations from MongoDB records
+  const liveTotalBookings = bookings.length;
+  const liveSeatsBooked = bookings.reduce((acc, b) => acc + (b.seatsBooked || 0), 0) || (platformStats?.totalSeatsShared || 0);
+  const liveFareVolume = bookings.reduce((acc, b) => acc + (b.totalFare || 0), 0) || (platformStats?.totalFareVolume || 0);
+  const liveCo2SavedKg = Math.round(liveSeatsBooked * 2.3) || (platformStats?.estimatedCo2SavedKg || 0);
+  const liveTrees = (liveCo2SavedKg / 21.77).toFixed(1);
+
   return (
     <div className="container py-4">
       {/* Title & Actions */}
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
         <div>
           <div className="d-flex align-items-center gap-2 mb-1">
-            <span className="badge bg-danger">Campus Administrator</span>
+            <span className="badge bg-primary">Campus Administrator</span>
             <span className="badge bg-primary-subtle text-primary border border-primary-subtle">MITAOE Alandi Transit Oversight</span>
           </div>
           <h3 className="fw-bold text-dark mb-0">System Administration &amp; Moderation Center</h3>
@@ -126,12 +143,21 @@ export const Admin = () => {
             Real-time management for verified student &amp; faculty accounts, RTO licenses, carpool moderation, and fare settlements.
           </p>
         </div>
-        <div className="d-flex gap-2">
+        <div className="d-flex align-items-center gap-2">
+          <div className="d-none d-sm-flex align-items-center gap-1 text-muted small pe-2 border-end" style={{ fontSize: '0.75rem' }}>
+            <span className="spinner-grow spinner-grow-sm text-success" style={{ width: '8px', height: '8px' }}></span>
+            <span>Live Atlas Sync &bull; {lastRefreshed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+          </div>
           <button className="btn btn-outline-secondary btn-sm" onClick={handleExportCSV}>
             <i className="bi bi-download me-1"></i> Export CSV
           </button>
-          <button className="btn btn-primary-carpool btn-sm" onClick={loadAdminData}>
-            <i className="bi bi-arrow-clockwise me-1"></i> Refresh Data
+          <button
+            className="btn btn-primary-carpool btn-sm d-flex align-items-center gap-1"
+            onClick={() => loadAdminData(false)}
+            disabled={refreshing}
+          >
+            <i className={`bi bi-arrow-clockwise ${refreshing ? 'spinner-border spinner-border-sm' : ''}`}></i>
+            {refreshing ? 'Syncing...' : 'Refresh'}
           </button>
         </div>
       </div>
@@ -171,9 +197,9 @@ export const Admin = () => {
         <div className="col-lg-3 col-md-6 col-sm-6">
           <div className="card card-carpool p-3 border-0 shadow-sm text-center">
             <div className="text-muted small text-uppercase fw-semibold" style={{ fontSize: '0.72rem' }}>Campus Bookings</div>
-            <div className="fs-3 fw-bold text-info mt-1">{bookings.length || platformStats?.totalSeatsShared || 28}</div>
+            <div className="fs-3 fw-bold text-info mt-1">{liveTotalBookings}</div>
             <div className="text-muted small" style={{ fontSize: '0.72rem' }}>
-              ₹{platformStats?.totalFareVolume || 1850} Shared Volume
+              ₹{liveFareVolume} Shared Volume
             </div>
           </div>
         </div>
@@ -181,9 +207,9 @@ export const Admin = () => {
         <div className="col-lg-3 col-md-6 col-sm-12">
           <div className="card card-carpool p-3 border-0 shadow-sm text-center">
             <div className="text-muted small text-uppercase fw-semibold" style={{ fontSize: '0.72rem' }}>CO₂ Emissions Saved</div>
-            <div className="fs-3 fw-bold text-success mt-1">{platformStats?.estimatedCo2SavedKg || 64} kg</div>
+            <div className="fs-3 fw-bold text-success mt-1">{liveCo2SavedKg} kg</div>
             <div className="text-muted small" style={{ fontSize: '0.72rem' }}>
-              🌳 ~{platformStats?.treesEquivalent || '2.9'} Trees Equivalent
+              🌳 ~{liveTrees} Trees Equivalent
             </div>
           </div>
         </div>

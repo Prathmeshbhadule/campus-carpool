@@ -13,9 +13,9 @@ export const getPlatformStats = async (req, res, next) => {
       Ride.countDocuments(),
       Ride.countDocuments({ status: 'completed' }),
 
-      // Aggregation pipeline: total seats booked and total fare
+      // Aggregation pipeline: total seats booked and total fare across active/completed bookings
       Booking.aggregate([
-        { $match: { status: { $in: ['approved', 'completed'] } } },
+        { $match: { status: { $in: ['requested', 'approved', 'completed'] } } },
         {
           $group: {
             _id: null,
@@ -42,10 +42,10 @@ export const getPlatformStats = async (req, res, next) => {
       ])
     ]);
 
-    const totalSeatsShared = bookingStats[0]?.totalSeatsShared || 28;
-    const totalFareVolume = bookingStats[0]?.totalFareVolume || 1850;
+    const totalSeatsShared = bookingStats[0]?.totalSeatsShared || 0;
+    const totalFareVolume = bookingStats[0]?.totalFareVolume || 0;
 
-    // Environmental & economic estimations:
+    // Environmental & economic estimations based on actual shared seats:
     // Average 18 km per commute trip in Pune/PCMC
     // Average CO2 saved = ~2.3 kg per shared carpool ride
     // Average money saved per passenger vs private cab = ~₹250
